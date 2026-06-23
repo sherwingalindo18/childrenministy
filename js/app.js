@@ -152,6 +152,7 @@ function Login({ onLogin }) {
     <div className="auth-wrap">
       <div className="auth-card glass">
         <div className="auth-logo"><div className="ring"><Logo /></div></div>
+        <p className="church-name-auth">Jesus Christ Perfect Redeemer Church</p>
         <h1>Children Ministry</h1>
         <p className="sub">Attendance for the Lord’s little ones</p>
 
@@ -775,7 +776,7 @@ function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, child
       <header className="topbar">
         <div className="brand">
           <button className="logo-mark" onClick={tapLogo} title="Children Ministry" aria-label="Home"><Logo /></button>
-          <div className="brand-text"><small>Children Ministry</small><strong>Attendance</strong></div>
+          <div className="brand-text"><span className="church-name">Jesus Christ Perfect Redeemer Church</span><small>Children Ministry</small><strong>Attendance</strong></div>
         </div>
         <nav className={"nav" + (menuOpen ? " open" : "")}>
           {tabs.map(([k, label]) => (
