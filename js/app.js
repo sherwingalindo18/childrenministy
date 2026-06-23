@@ -320,9 +320,7 @@ function Attendance({ teacher, preset }) {
     try {
       const r = await API.getStudents(category);
       setStudents(r.students);
-      const init = {};
-      r.students.forEach((s) => (init[s.name] = "Present")); // default everyone present
-      setMarks(init);
+      setMarks({}); // default: cleared — teacher marks each child Present/Absent/Dropped
     } catch (e) { notify("error", "Could not load students", e.message); }
     finally { setLoading(false); }
   }, [category]);
@@ -354,7 +352,7 @@ function Attendance({ teacher, preset }) {
       <div className="page-head">
         <span className="eyebrow">Attendance</span>
         <h1>Take the <span className="accent">register</span></h1>
-        <p>Choose the Sunday and the class. Everyone starts marked present — just flip whoever’s away.</p>
+        <p>Choose the Sunday and the class, then mark each child Present, Absent, or Dropped.</p>
       </div>
 
       <div className="card glass">
@@ -410,6 +408,7 @@ function Attendance({ teacher, preset }) {
                         <div className="toggle-pair">
                           <button className={marks[s.name] === "Present" ? "on-present" : ""} onClick={() => set(s.name, "Present")}>Present</button>
                           <button className={marks[s.name] === "Absent" ? "on-absent" : ""} onClick={() => set(s.name, "Absent")}>Absent</button>
+                          <button className={marks[s.name] === "Dropped" ? "on-dropped" : ""} onClick={() => set(s.name, "Dropped")}>Dropped</button>
                         </div>
                       </td>
                     </tr>
@@ -503,7 +502,7 @@ function History() {
                     <td>{fmtDate(r.date)}</td>
                     <td className="s-name">{r.student}</td>
                     <td><span className="badge cat">{r.category}</span></td>
-                    <td><span className={"badge " + (r.status === "Present" ? "present" : "absent")}>{r.status}</span></td>
+                    <td><span className={"badge " + (r.status === "Present" ? "present" : r.status === "Dropped" ? "dropped" : "absent")}>{r.status}</span></td>
                     <td className="muted">{r.teacher}</td>
                   </tr>
                 ))}

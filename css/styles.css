@@ -336,11 +336,13 @@ h1, h2, h3, .display { font-family: var(--font-display); font-optical-sizing: au
 }
 .toggle-pair button.on-present { background: var(--present); color: #06281d; }
 .toggle-pair button.on-absent { background: var(--absent); color: #3d0814; }
+.toggle-pair button.on-dropped { background: #000; color: #fff; }
 
 .badge { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 600; padding: 0.28rem 0.7rem; border-radius: 999px; }
 .badge.present { background: rgba(52, 211, 153, 0.16); color: var(--present); }
 .badge.absent { background: rgba(251, 113, 133, 0.16); color: var(--absent); }
 .badge.cat { background: rgba(212, 175, 55, 0.14); color: var(--gold-soft); }
+.badge.dropped { background: #000; color: #fff; }
 
 .bulk-bar { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 
