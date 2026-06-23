@@ -70,7 +70,7 @@ function Boot() {
   return (
     <div className="boot">
       <div style={{ textAlign: "center" }}>
-        <div className="ring"><span>✝</span></div>
+        <div className="ring"><Logo /></div>
         <p>Preparing the sanctuary…</p>
       </div>
     </div>
@@ -78,6 +78,17 @@ function Boot() {
 }
 
 function Spinner() { return <span className="spinner" aria-label="Loading" />; }
+
+// Church logo. Loads assets/logo.png; falls back to the ✝ glyph if the
+// image is missing so the UI never shows a broken image.
+function Logo({ className }) {
+  const [broken, setBroken] = useState(false);
+  if (broken) return <span>✝</span>;
+  return (
+    <img src="assets/logo.png" alt="Jesus Christ Perfect Redeemer Church"
+      className={"logo-img " + (className || "")} onError={() => setBroken(true)} />
+  );
+}
 
 function useCountUp(target, ms = 900) {
   const [n, setN] = useState(0);
@@ -140,7 +151,7 @@ function Login({ onLogin }) {
   return (
     <div className="auth-wrap">
       <div className="auth-card glass">
-        <div className="auth-logo"><div className="ring"><span>✝</span></div></div>
+        <div className="auth-logo"><div className="ring"><Logo /></div></div>
         <h1>Children Ministry</h1>
         <p className="sub">Attendance for the Lord’s little ones</p>
 
@@ -763,7 +774,7 @@ function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, child
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          <button className="logo-mark" onClick={tapLogo} title="Children Ministry" aria-label="Home">{"✝"}</button>
+          <button className="logo-mark" onClick={tapLogo} title="Children Ministry" aria-label="Home"><Logo /></button>
           <div className="brand-text"><small>Children Ministry</small><strong>Attendance</strong></div>
         </div>
         <nav className={"nav" + (menuOpen ? " open" : "")}>
