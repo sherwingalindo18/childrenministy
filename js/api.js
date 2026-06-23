@@ -108,7 +108,7 @@
       case "getStudents":
         return { ok: true, students: p.category ? D.students.filter((s) => s.category === p.category) : D.students };
       case "getDashboardStats": {
-        const today = new Date().toISOString().slice(0, 10);
+        const today = p.today || new Date().toISOString().slice(0, 10);
         return {
           ok: true,
           stats: {
@@ -176,11 +176,17 @@
   /* ---------- public API ---------- */
   const call = (action, payload = {}) => (DEMO ? demo(action, payload) : postAction(action, payload));
 
+  // Local calendar date as YYYY-MM-DD (avoids UTC/timezone off-by-one)
+  function localToday() {
+    const d = new Date(), p = (n) => String(n).padStart(2, "0");
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+
   window.API = {
     isDemo: DEMO,
     login: (email, password) => call("loginTeacher", { email, password }),
     getStudents: (category) => call("getStudents", { category }),
-    getDashboardStats: () => call("getDashboardStats", {}),
+    getDashboardStats: () => call("getDashboardStats", { today: localToday() }),
     saveAttendance: (data) => call("saveAttendance", data),
     getHistory: (filters) => call("getAttendanceHistory", filters),
     getReports: () => call("generateReports", {}),

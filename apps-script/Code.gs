@@ -161,10 +161,11 @@ function getAttendanceHistory(p) {
 }
 
 /* ---------- 5. Dashboard stats ---------- */
-function getDashboardStats() {
+function getDashboardStats(p) {
   var students = rows(SHEETS.STUDENTS);
   var count = function (c) { return students.filter(function (r) { return String(r[2]) === c; }).length; };
-  var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+  // Prefer the client's local date so "today" matches the user's calendar.
+  var today = (p && p.today) ? String(p.today) : Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
   var att = rows(SHEETS.ATTENDANCE).filter(function (r) { return toDateStr(r[1]) === today; });
   return {
     ok: true,
