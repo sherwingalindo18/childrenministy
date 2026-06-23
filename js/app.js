@@ -236,11 +236,18 @@ function Dashboard({ teacher, go }) {
         const byCat = (c) => students.filter((s) => s.category === c).length;
         const today = toISODate(new Date().toString());
         const todays = (h.records || []).filter((x) => toISODate(x.date) === today);
+        const submittedByCat = (c) => todays.filter((r) => r.category === c).length;
         setStats({
           total: students.length,
           Beginner: byCat("Beginner"),
           Middler: byCat("Middler"),
           Younger: byCat("Younger"),
+          // count of attendance submitted today, per class (for the top cards)
+          todayByCat: {
+            Beginner: submittedByCat("Beginner"),
+            Middler: submittedByCat("Middler"),
+            Younger: submittedByCat("Younger"),
+          },
           todayTotal: todays.length,
           todayPresent: todays.filter((x) => x.status === "Present").length,
         });
@@ -264,9 +271,9 @@ function Dashboard({ teacher, go }) {
         <>
           <div className="stat-grid">
             <Stat label="Total Students" value={stats.total} foot="Across all classes" accent="accent-gold" />
-            <Stat label="Beginner" value={stats.Beginner} foot="Youngest class" pip="#3b82f6" />
-            <Stat label="Middler" value={stats.Middler} foot="Middle class" pip="#d4af37" />
-            <Stat label="Younger" value={stats.Younger} foot="Older class" pip="#34d399" />
+            <Stat label="Beginner" value={stats.todayByCat.Beginner} foot="Submitted today" pip="#3b82f6" />
+            <Stat label="Middler" value={stats.todayByCat.Middler} foot="Submitted today" pip="#d4af37" />
+            <Stat label="Younger" value={stats.todayByCat.Younger} foot="Submitted today" pip="#34d399" />
             <Stat label="Present Today" value={stats.todayPresent}
               foot={stats.todayTotal ? stats.todayTotal + " submitted today" : "Not taken yet"} accent="accent-blue" />
           </div>
