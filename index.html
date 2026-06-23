@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a1228" />
+  <meta name="description" content="Children Ministry Attendance System — record Sunday attendance for Beginner, Midler and Younger classes." />
+  <title>Children Ministry · Attendance</title>
+
+  <!-- Fonts: Fraunces (display serif) + Plus Jakarta Sans (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="root"></div>
+  <noscript style="color:#fff;display:block;padding:2rem;text-align:center">
+    This attendance system needs JavaScript enabled to run.
+  </noscript>
+
+  <!-- React 18 (UMD) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel: transpiles JSX in the browser (no build step). For higher traffic, pre-build instead. -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>
+    // Force the CLASSIC JSX runtime. Babel 8's React preset defaults to the
+    // "automatic" runtime, which injects `import { jsx } from "react/jsx-runtime"`
+    // — that breaks a non-module <script> ("Cannot use import statement outside a
+    // module"). Classic runtime compiles JSX to React.createElement, which works
+    // with the global React UMD build loaded above.
+    Babel.registerPreset('react-classic', {
+      presets: [[Babel.availablePresets['react'], { runtime: 'classic' }]]
+    });
+  </script>
+
+  <!-- API layer (plain JS, must run before the app) -->
+  <script src="js/api.js"></script>
+
+  <!-- React application (JSX in js/app.js).
+       We fetch + transform + inject it ourselves rather than relying on Babel's
+       automatic `type="text/babel"` runner: that runner doesn't honor the
+       custom classic-runtime preset and fails with a CORS-masked "Script error".
+       Injecting the compiled code as a same-origin <script> also surfaces any
+       real runtime error with a usable stack. -->
+  <script>
+    (async function () {
+      try {
+        var src = await (await fetch('js/app.js')).text();
+        var out = Babel.transform(src, { presets: ['react-classic'], filename: 'app.js' }).code;
+        var s = document.createElement('script');
+        s.textContent = out + '\n//# sourceURL=app.compiled.js';
+        document.body.appendChild(s);
+      } catch (err) {
+        document.getElementById('root').innerHTML =
+          '<pre style="color:#fff;padding:2rem;white-space:pre-wrap">Failed to start the app:\n' +
+          String(err && (err.stack || err.message)) + '</pre>';
+      }
+    })();
+  </script>
+</body>
+</html>

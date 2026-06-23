@@ -1,0 +1,18 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local env / secrets (do NOT commit deployment secrets)
+.env
+.env.local
+
+# Build output (only if you later add a bundler)
+dist/
+node_modules/
