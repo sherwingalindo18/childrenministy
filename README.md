@@ -118,16 +118,15 @@ Reload the site. Demo mode switches off automatically and you're live.
 
 ---
 
-## Optional: hash the passwords
-`Code.gs` stores passwords as plain text by default so everything works immediately.
-To harden it, open `Code.gs`, set a secret `SALT`, and flip:
+## Password hashing (enabled)
+`Code.gs` ships with `var HASH = true;`, so new and changed teacher passwords are stored
+as salted SHA-256 hashes and login compares hashes. Existing plain-text rows keep working
+until each teacher's password is next changed, so this never locks anyone out.
 
-```js
-var HASH = true;
-```
-
-New and changed passwords are then stored as salted SHA-256 hashes; existing plain-text
-rows keep working until each teacher's password is next changed.
+The secret salt is read from a **Script Property** (not committed to this repo). Set it
+once in the Apps Script editor: **Project Settings → Script Properties → Add property**
+`SALT` = a long random string of your own. Until you set it, a non-secret default is used
+so logins still work — set a real `SALT` before relying on the hashes for security.
 
 ---
 

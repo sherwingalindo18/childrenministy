@@ -219,16 +219,26 @@ function deleteTeacher(p) {
 }
 
 /*****************************************************************
- * Password hashing (recommended)
+ * Password hashing (ENABLED)
  * ---------------------------------------------------------------
- * By default this stores passwords as plain text so the system
- * works out of the box. To harden it, set HASH = true. New and
- * updated teacher passwords will then be stored as salted SHA-256
- * hashes, and login will compare hashes. (Existing plain-text
- * passwords keep working until they're changed.)
+ * New and updated teacher passwords are stored as salted SHA-256
+ * hashes, and login compares hashes. Existing plain-text rows keep
+ * working until each password is next changed (legacy fallback in
+ * verifyPassword), so turning this on never locks anyone out.
+ *
+ * SECRET SALT: the salt is read from a Script Property named "SALT"
+ * so the secret is NOT committed to this (public) repo. Set it once:
+ *   Apps Script editor → Project Settings → Script Properties →
+ *   Add property:  SALT = <a long random string of your own>
+ * Until you set it, a non-secret default is used so logins still work;
+ * set a real SALT before relying on the hashes for security.
  *****************************************************************/
-var HASH = false;
-var SALT = "change-this-salt-string"; // set your own secret before enabling HASH
+var HASH = true;
+
+function getSalt() {
+  var s = PropertiesService.getScriptProperties().getProperty("SALT");
+  return s || "change-this-salt-string"; // fallback if no Script Property set yet
+}
 
 function hashPassword(plain) {
   if (!HASH) return plain;
@@ -239,7 +249,7 @@ function verifyPassword(plain, stored) {
   return plain === stored; // legacy plain-text row
 }
 function digest(plain) {
-  var raw = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, SALT + plain, Utilities.Charset.UTF_8);
+  var raw = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, getSalt() + plain, Utilities.Charset.UTF_8);
   return raw.map(function (b) { return ("0" + (b & 0xff).toString(16)).slice(-2); }).join("");
 }
 

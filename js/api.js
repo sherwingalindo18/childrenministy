@@ -16,13 +16,11 @@
    ============================================================ */
 
 (function () {
-  // 1) PASTE YOUR DEPLOYED WEB APP URL HERE -------------------
-  // Leave this as the placeholder to run in self-contained DEMO mode
-  // (in-memory sample data) — ideal for the live GitHub Pages preview.
-  // To go live against your Google Sheet, replace it with your deployed
-  // Apps Script /exec URL, e.g.:
-  //   const API_URL = "https://script.google.com/macros/s/AKfyc.../exec";
-  const API_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+  // 1) DEPLOYED WEB APP URL -----------------------------------
+  // LIVE: pointing at the deployed Apps Script web app, so the app
+  // reads/writes your Google Sheet. To return to self-contained DEMO
+  // mode (in-memory sample data), set this back to "PASTE_YOUR_WEB_APP_URL_HERE".
+  const API_URL = "https://script.google.com/macros/s/AKfycbyRUJ-O5tdZYqItWMkmzbBMbEXAnBY2s9scOczw0J_90-XUvFBUy3mKOUUI_gif0UOziw/exec";
   // -----------------------------------------------------------
 
   const DEMO = !API_URL || API_URL.startsWith("PASTE_");
