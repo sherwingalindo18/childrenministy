@@ -17,13 +17,28 @@ const todaySunday = () => {
   d.setDate(d.getDate() - d.getDay()); // back up to Sunday
   return d.toISOString().slice(0, 10);
 };
+const MONTHS = { Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06", Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12" };
+// Normalise any date representation the backend might return to a plain
+// "YYYY-MM-DD" calendar string, WITHOUT timezone math (so it never shifts a
+// day). Handles ISO strings and the JS Date.toString() form Apps Script
+// produces when Sheets coerces a date cell, e.g. "Mon Jun 22 2026 00:00:00 GMT+0800".
+const toISODate = (v) => {
+  if (!v) return "";
+  const s = String(v).trim();
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return m[1] + "-" + m[2] + "-" + m[3];
+  m = s.match(/\b([A-Z][a-z]{2})\s+(\d{1,2})\s+(\d{4})\b/);
+  if (m && MONTHS[m[1]]) return m[3] + "-" + MONTHS[m[1]] + "-" + String(m[2]).padStart(2, "0");
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0") + "-" + String(d.getUTCDate()).padStart(2, "0");
+  return s;
+};
 const fmtDate = (iso) => {
   if (!iso) return "";
-  // Accept "YYYY-MM-DD" (treat as local midnight) or any other Date-parseable
-  // string the backend might return (e.g. a serialised Sheets Date object).
-  const d = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? new Date(iso + "T00:00:00") : new Date(iso);
-  if (isNaN(d.getTime())) return String(iso); // never show "Invalid Date"
-  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+  const isoDate = toISODate(iso); // robust calendar date, no "Invalid Date"
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return String(iso);
+  const d = new Date(isoDate + "T00:00:00");
+  return isNaN(d.getTime()) ? isoDate : d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 };
 const initials = (name) => (name || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 const genPassword = () => {
@@ -210,7 +225,27 @@ function Dashboard({ teacher, go }) {
   const notify = useToast();
   const [stats, setStats] = useState(null);
   useEffect(() => {
-    API.getDashboardStats().then((r) => setStats(r.stats)).catch((e) => notify("error", "Could not load stats", e.message));
+    let cancelled = false;
+    API.getDashboardStats()
+      .then((r) => {
+        if (cancelled) return;
+        setStats(r.stats);
+        // Compute "today" counts on the client from the raw records so they're
+        // correct regardless of how the Sheet stores dates or the backend's
+        // timezone (the server aggregate can be off by a day / coerced).
+        return API.getHistory({}).then((h) => {
+          if (cancelled) return;
+          const today = toISODate(new Date().toString());
+          const todays = (h.records || []).filter((x) => toISODate(x.date) === today);
+          setStats((prev) => ({
+            ...(prev || r.stats),
+            todayTotal: todays.length,
+            todayPresent: todays.filter((x) => x.status === "Present").length,
+          }));
+        }).catch(() => {}); // keep server stats if history fetch fails
+      })
+      .catch((e) => notify("error", "Could not load stats", e.message));
+    return () => { cancelled = true; };
   }, []);
   const now = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 
@@ -232,7 +267,7 @@ function Dashboard({ teacher, go }) {
             <Stat label="Midler" value={stats.Midler} foot="Middle class" pip="#d4af37" />
             <Stat label="Younger" value={stats.Younger} foot="Older class" pip="#34d399" />
             <Stat label="Present Today" value={stats.todayPresent}
-              foot={stats.todayTotal ? stats.todayTotal + " recorded" : "Not taken yet"} accent="accent-blue" />
+              foot={stats.todayTotal ? stats.todayTotal + " submitted today" : "Not taken yet"} accent="accent-blue" />
           </div>
 
           <div className="spacer" />
@@ -400,8 +435,13 @@ function History() {
   const run = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await API.getHistory({ date: date || undefined, category: category || undefined, student: student || undefined });
-      setRows(r.records);
+      // Date is filtered client-side so it works regardless of how the Sheet
+      // returns dates (and without needing a backend redeploy). Category and
+      // student are plain string matches, safe to filter server-side.
+      const r = await API.getHistory({ category: category || undefined, student: student || undefined });
+      let recs = r.records || [];
+      if (date) recs = recs.filter((x) => toISODate(x.date) === date);
+      setRows(recs);
     } catch (e) { notify("error", "Could not load history", e.message); }
     finally { setLoading(false); }
   }, [date, category, student]);
