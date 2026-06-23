@@ -106,6 +106,7 @@ function Logo({ className }) {
 }
 
 function useCountUp(target, ms = 900) {
+  const safe = Number(target) || 0; // never animate toward NaN/undefined
   const [n, setN] = useState(0);
   useEffect(() => {
     let raf, start;
@@ -114,12 +115,12 @@ function useCountUp(target, ms = 900) {
       if (!start) start = ts;
       const p = Math.min((ts - start) / ms, 1);
       const eased = 1 - Math.pow(1 - p, 3);
-      setN(Math.round(from + (target - from) * eased));
+      setN(Math.round(from + (safe - from) * eased));
       if (p < 1) raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [target, ms]);
+  }, [safe, ms]);
   return n;
 }
 
@@ -226,23 +227,23 @@ function Dashboard({ teacher, go }) {
   const [stats, setStats] = useState(null);
   useEffect(() => {
     let cancelled = false;
-    API.getDashboardStats()
-      .then((r) => {
+    // Compute everything on the client from the raw students + records so the
+    // dashboard never depends on backend stat key names or date coercion.
+    Promise.all([API.getStudents(), API.getHistory({})])
+      .then(([st, h]) => {
         if (cancelled) return;
-        setStats(r.stats);
-        // Compute "today" counts on the client from the raw records so they're
-        // correct regardless of how the Sheet stores dates or the backend's
-        // timezone (the server aggregate can be off by a day / coerced).
-        return API.getHistory({}).then((h) => {
-          if (cancelled) return;
-          const today = toISODate(new Date().toString());
-          const todays = (h.records || []).filter((x) => toISODate(x.date) === today);
-          setStats((prev) => ({
-            ...(prev || r.stats),
-            todayTotal: todays.length,
-            todayPresent: todays.filter((x) => x.status === "Present").length,
-          }));
-        }).catch(() => {}); // keep server stats if history fetch fails
+        const students = st.students || [];
+        const byCat = (c) => students.filter((s) => s.category === c).length;
+        const today = toISODate(new Date().toString());
+        const todays = (h.records || []).filter((x) => toISODate(x.date) === today);
+        setStats({
+          total: students.length,
+          Beginner: byCat("Beginner"),
+          Middler: byCat("Middler"),
+          Younger: byCat("Younger"),
+          todayTotal: todays.length,
+          todayPresent: todays.filter((x) => x.status === "Present").length,
+        });
       })
       .catch((e) => notify("error", "Could not load stats", e.message));
     return () => { cancelled = true; };
