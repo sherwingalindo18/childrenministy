@@ -1,6 +1,6 @@
 # Children Ministry Attendance System
 
-A premium, church-quality attendance system for the **Beginner**, **Midler**, and
+A premium, church-quality attendance system for the **Beginner**, **Middler**, and
 **Younger** children's classes. Teachers sign in, take the Sunday register, review
 history, and read reports. Built with **vanilla CSS, React (via CDN — no build step),
 Google Sheets as the database, and Google Apps Script as the API.**
@@ -66,7 +66,7 @@ step 3) are:
 | A — Student ID | B — Student Name | C — Category |
 |---|---|---|
 
-Category must be one of `Beginner`, `Midler`, `Younger`.
+Category must be one of `Beginner`, `Middler`, `Younger`.
 
 **Attendance**
 

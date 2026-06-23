@@ -50,9 +50,9 @@
       ["B-01", "Aaron Bello", "Beginner"], ["B-02", "Bisi Adeyemi", "Beginner"],
       ["B-03", "Caleb Okoro", "Beginner"], ["B-04", "Daniela Cruz", "Beginner"],
       ["B-05", "Esther Musa", "Beginner"], ["B-06", "Faith Olu", "Beginner"],
-      ["M-01", "Gideon Park", "Midler"], ["M-02", "Hannah Lee", "Midler"],
-      ["M-03", "Isaac Mensah", "Midler"], ["M-04", "Joy Abara", "Midler"],
-      ["M-05", "Kevin Tan", "Midler"], ["M-06", "Lara Diallo", "Midler"],
+      ["M-01", "Gideon Park", "Middler"], ["M-02", "Hannah Lee", "Middler"],
+      ["M-03", "Isaac Mensah", "Middler"], ["M-04", "Joy Abara", "Middler"],
+      ["M-05", "Kevin Tan", "Middler"], ["M-06", "Lara Diallo", "Middler"],
       ["Y-01", "Micah Stone", "Younger"], ["Y-02", "Naomi Reyes", "Younger"],
       ["Y-03", "Obed Kano", "Younger"], ["Y-04", "Praise Eze", "Younger"],
       ["Y-05", "Ruth Ada", "Younger"], ["Y-06", "Samuel Idris", "Younger"],
@@ -114,7 +114,7 @@
           stats: {
             total: D.students.length,
             Beginner: D.students.filter((s) => s.category === "Beginner").length,
-            Midler: D.students.filter((s) => s.category === "Midler").length,
+            Middler: D.students.filter((s) => s.category === "Middler").length,
             Younger: D.students.filter((s) => s.category === "Younger").length,
             todayPresent: D.attendance.filter((a) => a.date === today && a.status === "Present").length,
             todayTotal: D.attendance.filter((a) => a.date === today).length,
@@ -143,7 +143,7 @@
       }
       case "generateReports": {
         const byDate = {};
-        const byCat = { Beginner: { p: 0, a: 0 }, Midler: { p: 0, a: 0 }, Younger: { p: 0, a: 0 } };
+        const byCat = { Beginner: { p: 0, a: 0 }, Middler: { p: 0, a: 0 }, Younger: { p: 0, a: 0 } };
         let present = 0, absent = 0;
         D.attendance.forEach((r) => {
           byDate[r.date] = byDate[r.date] || { present: 0, absent: 0 };

@@ -172,7 +172,7 @@ function getDashboardStats(p) {
     stats: {
       total: students.length,
       Beginner: count("Beginner"),
-      Midler: count("Midler"),
+      Middler: count("Middler"),
       Younger: count("Younger"),
       todayPresent: att.filter(function (r) { return String(r[4]) === "Present"; }).length,
       todayTotal: att.length
@@ -183,7 +183,7 @@ function getDashboardStats(p) {
 /* ---------- 6. Reports ---------- */
 function generateReports() {
   var att = rows(SHEETS.ATTENDANCE);
-  var byDate = {}, byCat = { Beginner: { p: 0, a: 0 }, Midler: { p: 0, a: 0 }, Younger: { p: 0, a: 0 } };
+  var byDate = {}, byCat = { Beginner: { p: 0, a: 0 }, Middler: { p: 0, a: 0 }, Younger: { p: 0, a: 0 } };
   var present = 0, absent = 0;
   att.forEach(function (r) {
     var date = toDateStr(r[1]), cat = String(r[3]), status = String(r[4]);
@@ -279,7 +279,7 @@ function initialiseSpreadsheet() {
   var s = resetSheet(ss, SHEETS.STUDENTS, ["Student ID", "Student Name", "Category"]);
   var sample = [
     ["B-01", "Aaron Bello", "Beginner"], ["B-02", "Bisi Adeyemi", "Beginner"], ["B-03", "Caleb Okoro", "Beginner"],
-    ["M-01", "Gideon Park", "Midler"], ["M-02", "Hannah Lee", "Midler"], ["M-03", "Isaac Mensah", "Midler"],
+    ["M-01", "Gideon Park", "Middler"], ["M-02", "Hannah Lee", "Middler"], ["M-03", "Isaac Mensah", "Middler"],
     ["Y-01", "Micah Stone", "Younger"], ["Y-02", "Naomi Reyes", "Younger"], ["Y-03", "Obed Kano", "Younger"]
   ];
   sample.forEach(function (r) { s.appendRow(r); });

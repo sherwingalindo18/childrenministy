@@ -6,7 +6,7 @@
 const { useState, useEffect, useRef, useCallback, createContext, useContext } = React;
 
 /* ---------- config ---------- */
-const CATEGORIES = ["Beginner", "Midler", "Younger"];
+const CATEGORIES = ["Beginner", "Middler", "Younger"];
 const ADMIN_PIN = "1820"; // change this — gate for the hidden admin panel
 const IDLE_LIMIT_MS = 20 * 60 * 1000; // auto-logout after 20 min idle
 const SESSION_KEY = "cms.session";
@@ -264,7 +264,7 @@ function Dashboard({ teacher, go }) {
           <div className="stat-grid">
             <Stat label="Total Students" value={stats.total} foot="Across all classes" accent="accent-gold" />
             <Stat label="Beginner" value={stats.Beginner} foot="Youngest class" pip="#3b82f6" />
-            <Stat label="Midler" value={stats.Midler} foot="Middle class" pip="#d4af37" />
+            <Stat label="Middler" value={stats.Middler} foot="Middle class" pip="#d4af37" />
             <Stat label="Younger" value={stats.Younger} foot="Older class" pip="#34d399" />
             <Stat label="Present Today" value={stats.todayPresent}
               foot={stats.todayTotal ? stats.todayTotal + " submitted today" : "Not taken yet"} accent="accent-blue" />
