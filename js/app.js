@@ -636,7 +636,26 @@ function GroupBars({ cats, present, absent }) {
 function Reports() {
   const notify = useToast();
   const [rep, setRep] = useState(null);
-  useEffect(() => { API.getReports().then((r) => setRep(r.report)).catch((e) => notify("error", "Could not build reports", e.message)); }, []);
+  useEffect(() => {
+    // Build the report on the client from raw records so it doesn't depend on
+    // the backend's category keys or date format. Present/Absent drive the
+    // totals and rate; "Dropped" (or any other status) is excluded.
+    API.getHistory({})
+      .then((r) => {
+        const recs = r.records || [];
+        const byDate = {};
+        const byCat = { Beginner: { p: 0, a: 0 }, Middler: { p: 0, a: 0 }, Younger: { p: 0, a: 0 } };
+        let present = 0, absent = 0;
+        recs.forEach((x) => {
+          const d = toISODate(x.date);
+          if (!byDate[d]) byDate[d] = { present: 0, absent: 0 };
+          if (x.status === "Present") { byDate[d].present++; present++; if (byCat[x.category]) byCat[x.category].p++; }
+          else if (x.status === "Absent") { byDate[d].absent++; absent++; if (byCat[x.category]) byCat[x.category].a++; }
+        });
+        setRep({ total: present + absent, present, absent, byDate, byCat });
+      })
+      .catch((e) => notify("error", "Could not build reports", e.message));
+  }, []);
 
   if (!rep) return <div className="page view-enter"><div className="card glass"><Spinner /> <span className="muted">Crunching the numbers…</span></div></div>;
 
@@ -652,8 +671,8 @@ function Reports() {
   const mLabels = mKeys.map((m) => new Date(m + "-01").toLocaleDateString(undefined, { month: "short" }));
 
   const cats = CATEGORIES;
-  const catP = cats.map((c) => rep.byCat[c].p);
-  const catA = cats.map((c) => rep.byCat[c].a);
+  const catP = cats.map((c) => (rep.byCat[c] ? rep.byCat[c].p : 0));
+  const catA = cats.map((c) => (rep.byCat[c] ? rep.byCat[c].a : 0));
   const rate = rep.total ? Math.round((rep.present / rep.total) * 100) : 0;
 
   return (
