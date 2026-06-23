@@ -78,6 +78,17 @@ function rows(name) {
   return data.filter(function (r) { return r.join("") !== ""; });
 }
 
+// Normalise a Date cell to a plain "YYYY-MM-DD" string. Google Sheets often
+// auto-converts a date typed as text into a real Date value, which would
+// otherwise read back as a full timestamp and break date matching/formatting.
+function toDateStr(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, Session.getScriptTimeZone(), "yyyy-MM-dd");
+  var s = String(v);
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  var d = new Date(s);
+  return isNaN(d.getTime()) ? s : Utilities.formatDate(d, Session.getScriptTimeZone(), "yyyy-MM-dd");
+}
+
 /* ---------- 1. Login ---------- */
 function loginTeacher(p) {
   var email = String(p.email || "").trim().toLowerCase();
@@ -109,7 +120,7 @@ function saveAttendance(p) {
   // Re-submitting the same date+class replaces the earlier rows.
   var values = sh.getDataRange().getValues();
   for (var i = values.length - 1; i >= 1; i--) {
-    if (String(values[i][1]) === String(date) && String(values[i][3]) === String(category)) {
+    if (toDateStr(values[i][1]) === toDateStr(date) && String(values[i][3]) === String(category)) {
       sh.deleteRow(i + 1);
     }
   }
@@ -135,7 +146,7 @@ function saveAttendance(p) {
 function getAttendanceHistory(p) {
   var list = rows(SHEETS.ATTENDANCE).map(function (r) {
     return {
-      id: String(r[0]), date: String(r[1]), student: String(r[2]), category: String(r[3]),
+      id: String(r[0]), date: toDateStr(r[1]), student: String(r[2]), category: String(r[3]),
       status: String(r[4]), teacher: String(r[5]), email: String(r[6]), timestamp: String(r[7])
     };
   });
@@ -153,8 +164,8 @@ function getAttendanceHistory(p) {
 function getDashboardStats() {
   var students = rows(SHEETS.STUDENTS);
   var count = function (c) { return students.filter(function (r) { return String(r[2]) === c; }).length; };
-  var today = new Date().toISOString().slice(0, 10);
-  var att = rows(SHEETS.ATTENDANCE).filter(function (r) { return String(r[1]) === today; });
+  var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+  var att = rows(SHEETS.ATTENDANCE).filter(function (r) { return toDateStr(r[1]) === today; });
   return {
     ok: true,
     stats: {
@@ -174,7 +185,7 @@ function generateReports() {
   var byDate = {}, byCat = { Beginner: { p: 0, a: 0 }, Midler: { p: 0, a: 0 }, Younger: { p: 0, a: 0 } };
   var present = 0, absent = 0;
   att.forEach(function (r) {
-    var date = String(r[1]), cat = String(r[3]), status = String(r[4]);
+    var date = toDateStr(r[1]), cat = String(r[3]), status = String(r[4]);
     if (!byDate[date]) byDate[date] = { present: 0, absent: 0 };
     if (status === "Present") { byDate[date].present++; present++; if (byCat[cat]) byCat[cat].p++; }
     else { byDate[date].absent++; absent++; if (byCat[cat]) byCat[cat].a++; }

@@ -19,7 +19,10 @@ const todaySunday = () => {
 };
 const fmtDate = (iso) => {
   if (!iso) return "";
-  const d = new Date(iso + "T00:00:00");
+  // Accept "YYYY-MM-DD" (treat as local midnight) or any other Date-parseable
+  // string the backend might return (e.g. a serialised Sheets Date object).
+  const d = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? new Date(iso + "T00:00:00") : new Date(iso);
+  if (isNaN(d.getTime())) return String(iso); // never show "Invalid Date"
   return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 };
 const initials = (name) => (name || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
