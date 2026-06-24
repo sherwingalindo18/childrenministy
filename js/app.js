@@ -136,6 +136,24 @@ function Avatar({ name, image, size = 36 }) {
     : <span className="s-avatar s-avatar-fallback" style={style}>{initials(name)}</span>;
 }
 
+// Date field with a consistent M/D/YYYY display on every device. A native
+// date input sits invisibly on top for the picker (iOS can't reformat a
+// native date input, so we overlay our own short-format label).
+function DateField({ id, value, onChange, placeholder = "mm/dd/yyyy" }) {
+  const short = (iso) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+    return m ? (parseInt(m[2], 10) + "/" + parseInt(m[3], 10) + "/" + m[1]) : "";
+  };
+  const label = short(value);
+  return (
+    <div className="date-field">
+      <span className={"date-display" + (label ? "" : " is-empty")}>{label || placeholder}</span>
+      <span className="date-ico" aria-hidden="true">📅</span>
+      <input id={id} type="date" className="date-native" value={value || ""} onChange={onChange} />
+    </div>
+  );
+}
+
 function useCountUp(target, ms = 900) {
   const safe = Number(target) || 0; // never animate toward NaN/undefined
   const [n, setN] = useState(0);
@@ -407,7 +425,7 @@ function Attendance({ teacher, preset }) {
         <div className="row">
           <div className="field" style={{ margin: 0 }}>
             <label htmlFor="d">Date</label>
-            <input id="d" className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            <DateField id="d" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
           <div className="field" style={{ margin: 0 }}>
             <label htmlFor="c">Class</label>
@@ -783,7 +801,7 @@ function History() {
         <div className="row">
           <div className="field" style={{ margin: 0 }}>
             <label>Date</label>
-            <input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            <DateField value={date} onChange={(e) => setDate(e.target.value)} placeholder="Any date" />
           </div>
           <div className="field" style={{ margin: 0 }}>
             <label>Class</label>
