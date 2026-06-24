@@ -814,11 +814,11 @@ function History() {
               <tbody>
                 {rows.map((r) => (
                   <tr className="att-row" key={r.id}>
-                    <td>{fmtDate(r.date)}</td>
-                    <td className="s-name">{r.student}</td>
-                    <td><span className="badge cat">{r.category}</span></td>
-                    <td><span className={"badge " + (r.status === "Present" ? "present" : r.status === "Dropped" ? "dropped" : "absent")}>{r.status}</span></td>
-                    <td className="muted">{r.teacher}</td>
+                    <td data-label="Date">{fmtDate(r.date)}</td>
+                    <td data-label="Student" className="s-name">{r.student}</td>
+                    <td data-label="Class"><span className="badge cat">{r.category}</span></td>
+                    <td data-label="Status"><span className={"badge " + (r.status === "Present" ? "present" : r.status === "Dropped" ? "dropped" : "absent")}>{r.status}</span></td>
+                    <td data-label="Teacher" className="muted">{r.teacher}</td>
                   </tr>
                 ))}
               </tbody>

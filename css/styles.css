@@ -494,6 +494,39 @@ h1, h2, h3, .display { font-family: var(--font-display); font-optical-sizing: au
   .bulk-bar .btn { flex: 1; }
 }
 
+/* ---------- Mobile: compact header + stacked tables ---------- */
+@media (max-width: 640px) {
+  .topbar { padding: 0.7rem 0.9rem; }
+  .topbar-right { gap: 0.5rem; }
+  .brand { gap: 0.55rem; }
+  .brand .brand-text .church-name { display: none; }     /* logo already carries the church name */
+  .brand .brand-text small { font-size: 0.58rem; }
+  .brand .brand-text strong { font-size: 0.98rem; }
+  .nav { top: 60px; }
+
+  .page-head h1 { font-size: 1.6rem; }
+  .card { padding: 1.1rem; }
+  .row > * { min-width: 0; }       /* let filter fields shrink instead of overflowing */
+
+  /* Turn att-table rows into stacked cards so nothing scrolls sideways */
+  .att-table, .att-table tbody, .att-table tr, .att-table td { display: block; width: 100%; }
+  .att-table thead { display: none; }
+  .att-row { padding: 0.8rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+  .att-row td { border: none; padding: 0.22rem 0; text-align: left !important; white-space: normal !important; }
+  /* labelled cells (History) show their column name */
+  .att-row td[data-label]::before {
+    content: attr(data-label) ": ";
+    font-weight: 600; color: var(--ink-faint); margin-right: 0.35rem;
+    font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  /* Present/Absent toggle spans the row */
+  .att-row .toggle-pair { display: flex; width: 100%; }
+  .att-row .toggle-pair button { flex: 1; }
+  .s-id-cell { gap: 0.6rem; }
+  .roster-actions { width: 100%; justify-content: flex-start; margin-top: 0.3rem; }
+}
+
+
 /* Accessibility */
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
