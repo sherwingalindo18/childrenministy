@@ -350,9 +350,10 @@ function Attendance({ teacher, preset }) {
     API.getHistory({}).then((h) => {
       const c = {};
       (h.records || []).forEach((r) => {
-        if (!c[r.student]) c[r.student] = { present: 0, total: 0 };
+        if (!c[r.student]) c[r.student] = { present: 0, absent: 0, total: 0 };
         c[r.student].total++;
         if (r.status === "Present") c[r.student].present++;
+        else if (r.status === "Absent") c[r.student].absent++;
       });
       setCounts(c);
     }).catch(() => {});
@@ -497,7 +498,7 @@ function Attendance({ teacher, preset }) {
    Student information (read-only popup)
    ============================================================ */
 function StudentInfo({ student, stats, onClose }) {
-  const c = stats || { present: 0, total: 0 };
+  const c = stats || { present: 0, absent: 0, total: 0 };
   return (
     <Modal title="Student information" onClose={onClose}>
       <div className="student-edit-top">
@@ -510,6 +511,7 @@ function StudentInfo({ student, stats, onClose }) {
       <div className="info-rows">
         <div><span className="muted">Class</span><span className="badge cat">{student.category}</span></div>
         <div><span className="muted">Times present</span><strong style={{ color: "var(--present)" }}>{c.present}</strong></div>
+        <div><span className="muted">Times absent</span><strong style={{ color: "var(--absent)" }}>{c.absent}</strong></div>
         <div><span className="muted">Total recorded</span><strong>{c.total}</strong></div>
       </div>
       <div className="modal-actions">
@@ -593,9 +595,10 @@ function Students() {
       const [st, h] = await Promise.all([API.getStudents(), API.getHistory({})]);
       const c = {};
       (h.records || []).forEach((r) => {
-        if (!c[r.student]) c[r.student] = { present: 0, total: 0 };
+        if (!c[r.student]) c[r.student] = { present: 0, absent: 0, total: 0 };
         c[r.student].total++;
         if (r.status === "Present") c[r.student].present++;
+        else if (r.status === "Absent") c[r.student].absent++;
       });
       setCounts(c);
       setStudents(st.students || []);
