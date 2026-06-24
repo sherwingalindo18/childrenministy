@@ -298,7 +298,7 @@ function Dashboard({ teacher, go }) {
         <div className="card glass"><Spinner /> <span className="muted">Loading the rolls…</span></div>
       ) : (
         <>
-          <div className="stat-grid">
+          <div className="stat-grid stat-grid-dash">
             <Stat label="Total Students" value={stats.total} foot="Across all classes" accent="accent-gold" />
             <Stat label="Beginner" value={stats.todayByCat.Beginner} foot="Submitted today" pip="#3b82f6" />
             <Stat label="Middler" value={stats.todayByCat.Middler} foot="Submitted today" pip="#d4af37" />
@@ -1143,7 +1143,6 @@ function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, onUpd
   if (isAdmin) tabs.push(["admin", "Admin"]);
 
   const tapLogo = () => {
-    setView("dashboard"); setMenuOpen(false); // logo = go home (client-side, host-agnostic)
     const n = logoTaps + 1; setLogoTaps(n);
     if (n >= 3 && !isAdmin) { setLogoTaps(0); onUnlockAdmin(); }
     setTimeout(() => setLogoTaps(0), 1200);
@@ -1153,11 +1152,8 @@ function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, onUpd
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          <button className="logo-mark" onClick={tapLogo} title="Go to Dashboard" aria-label="Go to Dashboard"><Logo /></button>
-          <div className="brand-text" onClick={() => { setView("dashboard"); setMenuOpen(false); }} title="Go to Dashboard" role="link" tabIndex={0}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { setView("dashboard"); setMenuOpen(false); } }}>
-            <span className="church-name">Jesus Christ Perfect Redeemer Church</span><small>Children Ministry</small><strong>Attendance</strong>
-          </div>
+          <button className="logo-mark" onClick={tapLogo} title="Children Ministry" aria-label="Children Ministry"><Logo /></button>
+          <div className="brand-text"><span className="church-name">Jesus Christ Perfect Redeemer Church</span><small>Children Ministry</small><strong>Attendance</strong></div>
         </div>
         <nav className={"nav" + (menuOpen ? " open" : "")}>
           {tabs.map(([k, label]) => (

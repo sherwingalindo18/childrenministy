@@ -225,9 +225,6 @@ h1, h2, h3, .display { font-family: var(--font-display); font-optical-sizing: au
   border-bottom: 1px solid var(--glass-border);
 }
 .brand { display: flex; align-items: center; gap: 0.8rem; }
-.brand .logo-mark { cursor: pointer; }
-.brand .brand-text { cursor: pointer; transition: opacity 0.2s; }
-.brand .brand-text:hover { opacity: 0.85; }
 .brand .logo-mark {
   width: 42px; height: 42px;
   border-radius: 12px;
@@ -299,6 +296,9 @@ h1, h2, h3, .display { font-family: var(--font-display); font-optical-sizing: au
 
 /* ---------- Stat cards ---------- */
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.1rem; }
+/* Dashboard: keep all five cards on one line across the full width */
+.stat-grid-dash { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 760px) { .stat-grid-dash { grid-template-columns: repeat(2, 1fr); } }
 .stat {
   padding: 1.4rem 1.5rem;
   display: flex; flex-direction: column; gap: 0.35rem;
