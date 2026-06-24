@@ -1177,7 +1177,7 @@ function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, onUpd
       </header>
       {children}
       <footer className="app-footer">© 2026 Jesus Christ Perfect Redeemer Church. All Rights Reserved.</footer>
-      {settingsOpen && <TeacherSettings teacher={teacher} onClose={() => setSettingsOpen(false)} onUpdated={onUpdateTeacher} />}
+      {settingsOpen && <TeacherSettings teacher={teacher} onClose={() => setSettingsOpen(false)} onUpdated={onUpdateTeacher} onLogout={onLogout} />}
     </div>
   );
 }
@@ -1185,7 +1185,7 @@ function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, onUpd
 /* ============================================================
    Teacher settings — upload a profile photo
    ============================================================ */
-function TeacherSettings({ teacher, onClose, onUpdated }) {
+function TeacherSettings({ teacher, onClose, onUpdated, onLogout }) {
   const notify = useToast();
   const [image, setImage] = useState(teacher.image || "");
   const [busy, setBusy] = useState(false);
@@ -1222,8 +1222,10 @@ function TeacherSettings({ teacher, onClose, onUpdated }) {
     setPwBusy(true);
     try {
       await API.changePassword({ email: teacher.email, oldPassword: oldPw, newPassword: newPw });
-      notify("success", "Password changed", "Use your new password next time you sign in.");
       setOldPw(""); setNewPw(""); setConfirmPw(""); setShowPw(false);
+      notify("success", "Password changed", "Please sign in again with your new password.");
+      // sign out so the teacher re-authenticates with the new credentials
+      setTimeout(() => { onClose && onClose(); onLogout && onLogout(); }, 1200);
     } catch (e) { notify("error", "Couldn’t change password", e.message); }
     finally { setPwBusy(false); }
   };
