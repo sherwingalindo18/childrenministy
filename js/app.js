@@ -1143,6 +1143,7 @@ function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, onUpd
   if (isAdmin) tabs.push(["admin", "Admin"]);
 
   const tapLogo = () => {
+    setView("dashboard"); setMenuOpen(false); // logo = go home (client-side, host-agnostic)
     const n = logoTaps + 1; setLogoTaps(n);
     if (n >= 3 && !isAdmin) { setLogoTaps(0); onUnlockAdmin(); }
     setTimeout(() => setLogoTaps(0), 1200);
