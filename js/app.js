@@ -48,6 +48,26 @@ const genPassword = () => {
   for (let i = 3; i < 10; i++) out += all[Math.floor(Math.random() * all.length)];
   return out.split("").sort(() => Math.random() - 0.5).join("");
 };
+// Resize/compress an uploaded image file to a small square-ish JPEG data URL
+// (keeps it tiny enough to store in a Google Sheets cell).
+const resizeImage = (file, max = 160) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale)), h = Math.max(1, Math.round(img.height * scale));
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      cv.getContext("2d").drawImage(img, 0, 0, w, h);
+      resolve(cv.toDataURL("image/jpeg", 0.7));
+    };
+    img.onerror = () => reject(new Error("Could not read that image."));
+    img.src = reader.result;
+  };
+  reader.onerror = () => reject(new Error("Could not read that file."));
+  reader.readAsDataURL(file);
+});
 
 /* ============================================================
    Toast system
@@ -103,6 +123,14 @@ function Logo({ className }) {
     <img src="assets/logo.png" alt="Jesus Christ Perfect Redeemer Church"
       className={"logo-img " + (className || "")} onError={() => setBroken(true)} />
   );
+}
+
+// Student avatar — shows the uploaded image in a circle, or initials if none.
+function Avatar({ name, image, size = 36 }) {
+  const style = { width: size, height: size };
+  return image
+    ? <img className="s-avatar" src={image} alt={name} style={style} />
+    : <span className="s-avatar s-avatar-fallback" style={style}>{initials(name)}</span>;
 }
 
 function useCountUp(target, ms = 900) {
@@ -310,10 +338,11 @@ function Attendance({ teacher, preset }) {
   const [date, setDate] = useState(todaySunday());
   const [category, setCategory] = useState(preset?.category || "Beginner");
   const [students, setStudents] = useState([]);
-  const [marks, setMarks] = useState({}); // name -> "Present" | "Absent"
+  const [marks, setMarks] = useState({}); // name -> "Present" | "Absent" | "Dropped"
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  const [editingStudent, setEditingStudent] = useState(null); // student being edited
 
   const load = useCallback(async () => {
     setLoading(true); setDone(false);
@@ -401,8 +430,14 @@ function Attendance({ teacher, preset }) {
                   {students.map((s) => (
                     <tr className="att-row" key={s.id}>
                       <td>
-                        <div className="s-name">{s.name}</div>
-                        <div className="s-id">{s.id}</div>
+                        <div className="s-id-cell">
+                          <Avatar name={s.name} image={s.image} />
+                          <div className="s-id-text">
+                            <div className="s-name">{s.name}</div>
+                            <div className="s-id">{s.id}</div>
+                          </div>
+                          <button className="s-settings" title="Student settings" aria-label="Student settings" onClick={() => setEditingStudent(s)}>⚙</button>
+                        </div>
                       </td>
                       <td style={{ textAlign: "right" }}>
                         <div className="toggle-pair">
@@ -424,7 +459,77 @@ function Attendance({ teacher, preset }) {
           </>
         )}
       </div>
+
+      {editingStudent && (
+        <StudentSettings
+          student={editingStudent}
+          onClose={() => setEditingStudent(null)}
+          onSaved={(movedTo) => {
+            setEditingStudent(null);
+            if (movedTo && movedTo !== category) notify("info", "Student moved", "Now in the " + movedTo + " class.");
+            load();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+/* ============================================================
+   Student settings — edit name, move class, upload photo
+   ============================================================ */
+function StudentSettings({ student, onClose, onSaved }) {
+  const notify = useToast();
+  const [name, setName] = useState(student.name || "");
+  const [category, setCategory] = useState(student.category || CATEGORIES[0]);
+  const [image, setImage] = useState(student.image || "");
+  const [busy, setBusy] = useState(false);
+
+  const onFile = async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    try { setImage(await resizeImage(f, 160)); }
+    catch (err) { notify("error", "Image problem", err.message); }
+    finally { e.target.value = ""; }
+  };
+
+  const submit = async () => {
+    if (!name.trim()) { notify("error", "Name required", "Enter the student's name."); return; }
+    setBusy(true);
+    try {
+      await API.updateStudent({ id: student.id, name: name.trim(), category, image });
+      notify("success", "Student updated", name.trim());
+      onSaved(category);
+    } catch (e) { notify("error", "Save failed", e.message); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <Modal title="Student settings" onClose={onClose}>
+      <div className="student-edit-top">
+        <Avatar name={name} image={image} size={72} />
+        <div className="student-edit-photo">
+          <label className="btn btn-ghost btn-sm" style={{ cursor: "pointer" }}>
+            {image ? "Change photo" : "Upload photo"}
+            <input type="file" accept="image/*" style={{ display: "none" }} onChange={onFile} />
+          </label>
+          {image && <button className="btn btn-ghost btn-sm" onClick={() => setImage("")}>Remove</button>}
+        </div>
+      </div>
+      <div className="field"><label>Name</label>
+        <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Student name" />
+      </div>
+      <div className="field"><label>Class</label>
+        <select className="select" value={category} onChange={(e) => setCategory(e.target.value)}>
+          {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+      <p className="muted" style={{ fontSize: "0.78rem", marginTop: "-0.4rem" }}>ID {student.id} · changing the class moves this student.</p>
+      <div className="modal-actions">
+        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary" onClick={submit} disabled={busy}>{busy ? <Spinner /> : "Save changes"}</button>
+      </div>
+    </Modal>
   );
 }
 

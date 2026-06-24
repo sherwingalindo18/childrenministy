@@ -53,6 +53,7 @@ function route(action, p) {
   switch (action) {
     case "loginTeacher":         return loginTeacher(p);
     case "getStudents":          return getStudents(p);
+    case "updateStudent":        return updateStudent(p);
     case "saveAttendance":       return saveAttendance(p);
     case "getAttendanceHistory": return getAttendanceHistory(p);
     case "getDashboardStats":    return getDashboardStats(p);
@@ -105,11 +106,28 @@ function loginTeacher(p) {
 function getStudents(p) {
   var cat = p.category;
   var list = rows(SHEETS.STUDENTS).map(function (r) {
-    // Columns: A Student ID, B Name, C Category
-    return { id: String(r[0]), name: String(r[1]), category: String(r[2]) };
+    // Columns: A Student ID, B Name, C Category, D Image (optional)
+    return { id: String(r[0]), name: String(r[1]), category: String(r[2]), image: String(r[3] || "") };
   });
   if (cat) list = list.filter(function (s) { return s.category === cat; });
   return { ok: true, students: list };
+}
+
+/* ---------- 2b. Update a student (name / class / photo) ---------- */
+function updateStudent(p) {
+  var id = String(p.id || "");
+  if (!id) return { ok: false, error: "Missing student id." };
+  var sh = sheet(SHEETS.STUDENTS);
+  var values = sh.getDataRange().getValues();
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][0]) === id) {
+      if (p.name) sh.getRange(i + 1, 2).setValue(p.name);          // B Name
+      if (p.category) sh.getRange(i + 1, 3).setValue(p.category);  // C Category
+      if (typeof p.image === "string") sh.getRange(i + 1, 4).setValue(p.image); // D Image
+      return { ok: true };
+    }
+  }
+  return { ok: false, error: "Student not found." };
 }
 
 /* ---------- 3. Save attendance ---------- */
@@ -276,7 +294,7 @@ function initialiseSpreadsheet() {
   t.appendRow(["Teacher John", "john@church.org", "demo1234"]);
   t.appendRow(["Sister Grace", "grace@church.org", "demo1234"]);
 
-  var s = resetSheet(ss, SHEETS.STUDENTS, ["Student ID", "Student Name", "Category"]);
+  var s = resetSheet(ss, SHEETS.STUDENTS, ["Student ID", "Student Name", "Category", "Image"]);
   var sample = [
     ["B-01", "Aaron Bello", "Beginner"], ["B-02", "Bisi Adeyemi", "Beginner"], ["B-03", "Caleb Okoro", "Beginner"],
     ["M-01", "Gideon Park", "Middler"], ["M-02", "Hannah Lee", "Middler"], ["M-03", "Isaac Mensah", "Middler"],

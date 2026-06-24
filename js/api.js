@@ -56,7 +56,7 @@
       ["Y-01", "Micah Stone", "Younger"], ["Y-02", "Naomi Reyes", "Younger"],
       ["Y-03", "Obed Kano", "Younger"], ["Y-04", "Praise Eze", "Younger"],
       ["Y-05", "Ruth Ada", "Younger"], ["Y-06", "Samuel Idris", "Younger"],
-    ].map((r) => ({ id: r[0], name: r[1], category: r[2] })),
+    ].map((r) => ({ id: r[0], name: r[1], category: r[2], image: "" })),
     attendance: [],
   };
 
@@ -107,6 +107,14 @@
       }
       case "getStudents":
         return { ok: true, students: p.category ? D.students.filter((s) => s.category === p.category) : D.students };
+      case "updateStudent": {
+        const s = D.students.find((x) => x.id === p.id);
+        if (!s) throw new Error("Student not found.");
+        if (p.name) s.name = p.name;
+        if (p.category) s.category = p.category;
+        if (typeof p.image === "string") s.image = p.image;
+        return { ok: true };
+      }
       case "getDashboardStats": {
         const today = p.today || new Date().toISOString().slice(0, 10);
         return {
@@ -186,6 +194,7 @@
     isDemo: DEMO,
     login: (email, password) => call("loginTeacher", { email, password }),
     getStudents: (category) => call("getStudents", { category }),
+    updateStudent: (s) => call("updateStudent", s),
     getDashboardStats: () => call("getDashboardStats", { today: localToday() }),
     saveAttendance: (data) => call("saveAttendance", data),
     getHistory: (filters) => call("getAttendanceHistory", filters),
