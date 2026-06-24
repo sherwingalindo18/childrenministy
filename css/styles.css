@@ -361,6 +361,7 @@ h1, h2, h3, .display { font-family: var(--font-display); font-optical-sizing: au
 .student-edit-photo { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
 /* Students roster */
+.roster-actions { display: inline-flex; align-items: center; gap: 0.5rem; justify-content: flex-end; }
 .roster-group + .roster-group { margin-top: 1.5rem; }
 .roster-cat { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; color: var(--gold-soft); margin-bottom: 0.3rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--glass-border); }
 

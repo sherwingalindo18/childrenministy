@@ -10,6 +10,9 @@ const CATEGORIES = ["Beginner", "Middler", "Younger"];
 const ADMIN_PIN = "1820"; // change this — gate for the hidden admin panel
 const IDLE_LIMIT_MS = 20 * 60 * 1000; // auto-logout after 20 min idle
 const SESSION_KEY = "cms.session";
+// Usernames allowed to add / delete students (others can only view + edit).
+const STUDENT_MANAGERS = ["teacherjaja", "teachersher", "teacherlei"];
+const canManageStudents = (teacher) => STUDENT_MANAGERS.includes(String(teacher && teacher.email || "").trim().toLowerCase());
 
 /* ---------- helpers ---------- */
 const todaySunday = () => {
@@ -582,13 +585,14 @@ function StudentSettings({ student, onClose, onSaved }) {
 /* ============================================================
    Students — roster per class, attendance totals, add / delete
    ============================================================ */
-function Students() {
+function Students({ teacher }) {
   const notify = useToast();
   const [students, setStudents] = useState(null);
   const [counts, setCounts] = useState({}); // student name -> { present, total }
   const [editing, setEditing] = useState(null);
   const [adding, setAdding] = useState(false);
   const [confirmDel, setConfirmDel] = useState(null);
+  const canManage = canManageStudents(teacher); // add/delete limited to selected usernames
 
   const load = useCallback(async () => {
     try {
@@ -624,7 +628,7 @@ function Students() {
       <div className="card glass">
         <div className="card-head">
           <h2>{students.length} student{students.length === 1 ? "" : "s"}</h2>
-          <button className="btn btn-gold btn-sm" onClick={() => setAdding(true)}>Add student</button>
+          {canManage && <button className="btn btn-gold btn-sm" onClick={() => setAdding(true)}>Add student</button>}
         </div>
 
         {CATEGORIES.map((cat) => {
@@ -652,9 +656,11 @@ function Students() {
                             <span style={{ opacity: 0.6 }}> · </span><strong style={{ color: "var(--absent)" }}>{c.absent}</strong> absent
                             <span style={{ opacity: 0.6 }}> · {c.total} recorded</span>
                           </td>
-                          <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                            <button className="btn btn-ghost btn-sm" onClick={() => setEditing(s)}>Settings</button>{" "}
-                            <button className="btn btn-danger btn-sm" onClick={() => setConfirmDel(s)}>Delete</button>
+                          <td style={{ textAlign: "right" }}>
+                            <div className="roster-actions">
+                              <button className="s-iconbtn" title="Student settings" aria-label="Student settings" onClick={() => setEditing(s)}>⚙</button>
+                              {canManage && <button className="btn btn-danger btn-sm" onClick={() => setConfirmDel(s)}>Delete</button>}
+                            </div>
                           </td>
                         </tr>
                       );
@@ -1290,7 +1296,7 @@ function App() {
           onUnlockAdmin={() => setAskPin(true)} onLogout={logout} onUpdateTeacher={updateTeacher}>
           {view === "dashboard" && <Dashboard teacher={teacher} go={go} />}
           {view === "attendance" && <Attendance teacher={teacher} preset={attPreset} />}
-          {view === "students" && <Students />}
+          {view === "students" && <Students teacher={teacher} />}
           {view === "history" && <History />}
           {view === "reports" && <Reports />}
           {view === "admin" && isAdmin && <Admin />}
