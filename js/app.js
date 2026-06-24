@@ -343,6 +343,20 @@ function Attendance({ teacher, preset }) {
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null); // student being edited
+  const [infoStudent, setInfoStudent] = useState(null); // student info popup
+  const [counts, setCounts] = useState({}); // student name -> { present, total }
+
+  useEffect(() => {
+    API.getHistory({}).then((h) => {
+      const c = {};
+      (h.records || []).forEach((r) => {
+        if (!c[r.student]) c[r.student] = { present: 0, total: 0 };
+        c[r.student].total++;
+        if (r.status === "Present") c[r.student].present++;
+      });
+      setCounts(c);
+    }).catch(() => {});
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true); setDone(false);
@@ -436,7 +450,10 @@ function Attendance({ teacher, preset }) {
                             <div className="s-name">{s.name}</div>
                             <div className="s-id">{s.id}</div>
                           </div>
-                          <button className="s-settings" title="Student settings" aria-label="Student settings" onClick={() => setEditingStudent(s)}>⚙</button>
+                          <div className="s-row-actions">
+                            <button className="s-iconbtn" title="Student information" aria-label="Student information" onClick={() => setInfoStudent(s)}>{"ℹ"}</button>
+                            <button className="s-iconbtn" title="Student settings" aria-label="Student settings" onClick={() => setEditingStudent(s)}>⚙</button>
+                          </div>
                         </div>
                       </td>
                       <td style={{ textAlign: "right" }}>
@@ -460,6 +477,7 @@ function Attendance({ teacher, preset }) {
         )}
       </div>
 
+      {infoStudent && <StudentInfo student={infoStudent} stats={counts[infoStudent.name]} onClose={() => setInfoStudent(null)} />}
       {editingStudent && (
         <StudentSettings
           student={editingStudent}
@@ -472,6 +490,32 @@ function Attendance({ teacher, preset }) {
         />
       )}
     </div>
+  );
+}
+
+/* ============================================================
+   Student information (read-only popup)
+   ============================================================ */
+function StudentInfo({ student, stats, onClose }) {
+  const c = stats || { present: 0, total: 0 };
+  return (
+    <Modal title="Student information" onClose={onClose}>
+      <div className="student-edit-top">
+        <Avatar name={student.name} image={student.image} size={76} />
+        <div>
+          <div className="s-name" style={{ fontSize: "1.1rem" }}>{student.name}</div>
+          <div className="muted">{student.id}</div>
+        </div>
+      </div>
+      <div className="info-rows">
+        <div><span className="muted">Class</span><span className="badge cat">{student.category}</span></div>
+        <div><span className="muted">Times present</span><strong style={{ color: "var(--present)" }}>{c.present}</strong></div>
+        <div><span className="muted">Total recorded</span><strong>{c.total}</strong></div>
+      </div>
+      <div className="modal-actions">
+        <button className="btn btn-primary" onClick={onClose}>Close</button>
+      </div>
+    </Modal>
   );
 }
 
@@ -528,6 +572,162 @@ function StudentSettings({ student, onClose, onSaved }) {
       <div className="modal-actions">
         <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
         <button className="btn btn-primary" onClick={submit} disabled={busy}>{busy ? <Spinner /> : "Save changes"}</button>
+      </div>
+    </Modal>
+  );
+}
+
+/* ============================================================
+   Students — roster per class, attendance totals, add / delete
+   ============================================================ */
+function Students() {
+  const notify = useToast();
+  const [students, setStudents] = useState(null);
+  const [counts, setCounts] = useState({}); // student name -> { present, total }
+  const [editing, setEditing] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(null);
+
+  const load = useCallback(async () => {
+    try {
+      const [st, h] = await Promise.all([API.getStudents(), API.getHistory({})]);
+      const c = {};
+      (h.records || []).forEach((r) => {
+        if (!c[r.student]) c[r.student] = { present: 0, total: 0 };
+        c[r.student].total++;
+        if (r.status === "Present") c[r.student].present++;
+      });
+      setCounts(c);
+      setStudents(st.students || []);
+    } catch (e) { notify("error", "Could not load students", e.message); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const del = async (s) => {
+    try { await API.deleteStudent(s.id); notify("success", "Student removed", s.name); setConfirmDel(null); load(); }
+    catch (e) { notify("error", "Delete failed", e.message); }
+  };
+
+  if (!students) return <div className="page view-enter"><div className="card glass"><Spinner /> <span className="muted">Loading the roster…</span></div></div>;
+
+  return (
+    <div className="page view-enter">
+      <div className="page-head">
+        <span className="eyebrow">Students</span>
+        <h1>The <span className="accent">roster</span></h1>
+        <p>Every child by class, with their attendance so far. Edit a student, add a new one, or remove one.</p>
+      </div>
+
+      <div className="card glass">
+        <div className="card-head">
+          <h2>{students.length} student{students.length === 1 ? "" : "s"}</h2>
+          <button className="btn btn-gold btn-sm" onClick={() => setAdding(true)}>Add student</button>
+        </div>
+
+        {CATEGORIES.map((cat) => {
+          const list = students.filter((s) => s.category === cat);
+          return (
+            <div key={cat} className="roster-group">
+              <h3 className="roster-cat">{cat} <span className="muted">· {list.length}</span></h3>
+              {list.length === 0 ? (
+                <div className="muted" style={{ padding: "0.4rem 0 0.8rem" }}>No students in this class yet.</div>
+              ) : (
+                <table className="att-table">
+                  <tbody>
+                    {list.map((s) => {
+                      const c = counts[s.name] || { present: 0, total: 0 };
+                      return (
+                        <tr className="att-row" key={s.id}>
+                          <td>
+                            <div className="s-id-cell">
+                              <Avatar name={s.name} image={s.image} />
+                              <div className="s-id-text"><div className="s-name">{s.name}</div><div className="s-id">{s.id}</div></div>
+                            </div>
+                          </td>
+                          <td className="muted" style={{ whiteSpace: "nowrap" }}>
+                            <strong style={{ color: "var(--present)" }}>{c.present}</strong> present
+                            <span style={{ opacity: 0.6 }}> · {c.total} recorded</span>
+                          </td>
+                          <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                            <button className="btn btn-ghost btn-sm" onClick={() => setEditing(s)}>Settings</button>{" "}
+                            <button className="btn btn-danger btn-sm" onClick={() => setConfirmDel(s)}>Delete</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {editing && <StudentSettings student={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />}
+      {adding && <AddStudent onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load(); }} />}
+      {confirmDel && (
+        <Modal title="Remove student?" onClose={() => setConfirmDel(null)}>
+          <p className="muted">This removes <strong style={{ color: "var(--ink)" }}>{confirmDel.name}</strong> from the roster. Past attendance records are kept.</p>
+          <div className="modal-actions">
+            <button className="btn btn-ghost" onClick={() => setConfirmDel(null)}>Cancel</button>
+            <button className="btn btn-danger" onClick={() => del(confirmDel)}>Remove student</button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function AddStudent({ onClose, onSaved }) {
+  const notify = useToast();
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [image, setImage] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const onFile = async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    try { setImage(await resizeImage(f, 160)); }
+    catch (err) { notify("error", "Image problem", err.message); }
+    finally { e.target.value = ""; }
+  };
+
+  const submit = async () => {
+    if (!name.trim()) { notify("error", "Name required", "Enter the student's name."); return; }
+    setBusy(true);
+    try {
+      await API.addStudent({ name: name.trim(), category, image });
+      notify("success", "Student added", name.trim());
+      onSaved();
+    } catch (e) { notify("error", "Add failed", e.message); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <Modal title="Add student" onClose={onClose}>
+      <div className="student-edit-top">
+        <Avatar name={name || "?"} image={image} size={72} />
+        <div className="student-edit-photo">
+          <label className="btn btn-ghost btn-sm" style={{ cursor: "pointer" }}>
+            {image ? "Change photo" : "Upload photo"}
+            <input type="file" accept="image/*" style={{ display: "none" }} onChange={onFile} />
+          </label>
+          {image && <button className="btn btn-ghost btn-sm" onClick={() => setImage("")}>Remove</button>}
+        </div>
+      </div>
+      <div className="field"><label>Name</label>
+        <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Student name" autoFocus />
+      </div>
+      <div className="field"><label>Class</label>
+        <select className="select" value={category} onChange={(e) => setCategory(e.target.value)}>
+          {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+      <p className="muted" style={{ fontSize: "0.78rem", marginTop: "-0.4rem" }}>A student ID is assigned automatically.</p>
+      <div className="modal-actions">
+        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary" onClick={submit} disabled={busy}>{busy ? <Spinner /> : "Add student"}</button>
       </div>
     </Modal>
   );
@@ -934,7 +1134,7 @@ function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, onUpd
   const [logoTaps, setLogoTaps] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const tabs = [["dashboard", "Dashboard"], ["attendance", "Attendance"], ["history", "History"], ["reports", "Reports"]];
+  const tabs = [["dashboard", "Dashboard"], ["attendance", "Attendance"], ["students", "Students"], ["history", "History"], ["reports", "Reports"]];
   if (isAdmin) tabs.push(["admin", "Admin"]);
 
   const tapLogo = () => {
@@ -1084,6 +1284,7 @@ function App() {
           onUnlockAdmin={() => setAskPin(true)} onLogout={logout} onUpdateTeacher={updateTeacher}>
           {view === "dashboard" && <Dashboard teacher={teacher} go={go} />}
           {view === "attendance" && <Attendance teacher={teacher} preset={attPreset} />}
+          {view === "students" && <Students />}
           {view === "history" && <History />}
           {view === "reports" && <Reports />}
           {view === "admin" && isAdmin && <Admin />}

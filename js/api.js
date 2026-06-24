@@ -115,6 +115,25 @@
         if (typeof p.image === "string") s.image = p.image;
         return { ok: true };
       }
+      case "addStudent": {
+        const name = (p.name || "").trim(), category = (p.category || "").trim();
+        if (!name || !category) throw new Error("Name and class are required.");
+        let id = (p.id || "").trim();
+        if (!id) {
+          const prefix = category.charAt(0).toUpperCase();
+          let max = 0;
+          D.students.forEach((s) => { const m = String(s.id).match(new RegExp("^" + prefix + "-(\\d+)$")); if (m) max = Math.max(max, parseInt(m[1], 10)); });
+          id = prefix + "-" + ("0" + (max + 1)).slice(-2);
+        }
+        D.students.push({ id, name, category, image: typeof p.image === "string" ? p.image : "" });
+        return { ok: true, id };
+      }
+      case "deleteStudent": {
+        const before = D.students.length;
+        D.students = D.students.filter((s) => s.id !== p.id);
+        if (D.students.length === before) throw new Error("Student not found.");
+        return { ok: true };
+      }
       case "getDashboardStats": {
         const today = p.today || new Date().toISOString().slice(0, 10);
         return {
@@ -196,6 +215,8 @@
     login: (email, password) => call("loginTeacher", { email, password }),
     getStudents: (category) => call("getStudents", { category }),
     updateStudent: (s) => call("updateStudent", s),
+    addStudent: (s) => call("addStudent", s),
+    deleteStudent: (id) => call("deleteStudent", { id }),
     getDashboardStats: () => call("getDashboardStats", { today: localToday() }),
     saveAttendance: (data) => call("saveAttendance", data),
     getHistory: (filters) => call("getAttendanceHistory", filters),

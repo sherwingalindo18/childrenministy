@@ -54,6 +54,8 @@ function route(action, p) {
     case "loginTeacher":         return loginTeacher(p);
     case "getStudents":          return getStudents(p);
     case "updateStudent":        return updateStudent(p);
+    case "addStudent":           return addStudent(p);
+    case "deleteStudent":        return deleteStudent(p);
     case "saveAttendance":       return saveAttendance(p);
     case "getAttendanceHistory": return getAttendanceHistory(p);
     case "getDashboardStats":    return getDashboardStats(p);
@@ -127,6 +129,38 @@ function updateStudent(p) {
       if (typeof p.image === "string") sh.getRange(i + 1, 4).setValue(p.image); // D Image
       return { ok: true };
     }
+  }
+  return { ok: false, error: "Student not found." };
+}
+
+/* ---------- 2c. Add / delete a student ---------- */
+function addStudent(p) {
+  var name = String(p.name || "").trim();
+  var category = String(p.category || "").trim();
+  if (!name || !category) return { ok: false, error: "Name and class are required." };
+  var id = String(p.id || "").trim();
+  if (!id) id = nextStudentId(category);
+  sheet(SHEETS.STUDENTS).appendRow([id, name, category, String(p.image || "")]);
+  return { ok: true, id: id };
+}
+
+function nextStudentId(category) {
+  var prefix = category.charAt(0).toUpperCase();
+  var max = 0;
+  rows(SHEETS.STUDENTS).forEach(function (r) {
+    var m = String(r[0]).match(new RegExp("^" + prefix + "-(\\d+)$"));
+    if (m) { var n = parseInt(m[1], 10); if (n > max) max = n; }
+  });
+  return prefix + "-" + ("0" + (max + 1)).slice(-2);
+}
+
+function deleteStudent(p) {
+  var id = String(p.id || "");
+  if (!id) return { ok: false, error: "Missing student id." };
+  var sh = sheet(SHEETS.STUDENTS);
+  var values = sh.getDataRange().getValues();
+  for (var i = values.length - 1; i >= 1; i--) {
+    if (String(values[i][0]) === id) { sh.deleteRow(i + 1); return { ok: true }; }
   }
   return { ok: false, error: "Student not found." };
 }

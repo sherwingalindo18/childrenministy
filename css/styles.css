@@ -337,17 +337,28 @@ h1, h2, h3, .display { font-family: var(--font-display); font-optical-sizing: au
 .s-id-text { min-width: 0; }
 .s-avatar { border-radius: 50%; object-fit: cover; flex: 0 0 auto; display: inline-grid; place-items: center; border: 1px solid var(--glass-border); }
 .s-avatar-fallback { background: linear-gradient(135deg, var(--gold-soft), var(--gold)); color: var(--black); font-weight: 700; font-family: var(--font-display); font-size: 0.82rem; }
-.s-settings {
-  margin-left: auto; flex: 0 0 auto;
+.s-row-actions { margin-left: auto; flex: 0 0 auto; display: flex; gap: 0.4rem; }
+.s-iconbtn {
+  flex: 0 0 auto;
   width: 30px; height: 30px; border-radius: 8px;
   background: var(--glass); border: 1px solid var(--glass-border); color: var(--ink-soft);
-  cursor: pointer; font-size: 0.95rem; line-height: 1; transition: color 0.2s, background 0.2s, transform 0.2s;
+  cursor: pointer; font-size: 0.95rem; line-height: 1; display: grid; place-items: center;
+  transition: color 0.2s, background 0.2s, transform 0.2s;
 }
-.s-settings:hover { color: var(--gold); background: var(--glass-strong); transform: rotate(45deg); }
+.s-iconbtn:hover { color: var(--gold); background: var(--glass-strong); }
+
+/* Student information popup rows */
+.info-rows { display: flex; flex-direction: column; gap: 0.2rem; margin-bottom: 0.4rem; }
+.info-rows > div { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
+.info-rows > div:last-child { border-bottom: none; }
 
 /* Student settings modal */
 .student-edit-top { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
 .student-edit-photo { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+/* Students roster */
+.roster-group + .roster-group { margin-top: 1.5rem; }
+.roster-cat { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; color: var(--gold-soft); margin-bottom: 0.3rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--glass-border); }
 
 .toggle-pair { display: inline-flex; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--glass-border); border-radius: 999px; padding: 3px; gap: 3px; }
 .toggle-pair button {
