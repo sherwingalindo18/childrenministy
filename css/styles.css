@@ -225,6 +225,9 @@ h1, h2, h3, .display { font-family: var(--font-display); font-optical-sizing: au
   border-bottom: 1px solid var(--glass-border);
 }
 .brand { display: flex; align-items: center; gap: 0.8rem; }
+.brand .logo-mark { cursor: pointer; }
+.brand .brand-text { cursor: pointer; transition: opacity 0.2s; }
+.brand .brand-text:hover { opacity: 0.85; }
 .brand .logo-mark {
   width: 42px; height: 42px;
   border-radius: 12px;

@@ -1153,8 +1153,11 @@ function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, onUpd
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          <button className="logo-mark" onClick={tapLogo} title="Children Ministry" aria-label="Home"><Logo /></button>
-          <div className="brand-text"><span className="church-name">Jesus Christ Perfect Redeemer Church</span><small>Children Ministry</small><strong>Attendance</strong></div>
+          <button className="logo-mark" onClick={tapLogo} title="Go to Dashboard" aria-label="Go to Dashboard"><Logo /></button>
+          <div className="brand-text" onClick={() => { setView("dashboard"); setMenuOpen(false); }} title="Go to Dashboard" role="link" tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { setView("dashboard"); setMenuOpen(false); } }}>
+            <span className="church-name">Jesus Christ Perfect Redeemer Church</span><small>Children Ministry</small><strong>Attendance</strong>
+          </div>
         </div>
         <nav className={"nav" + (menuOpen ? " open" : "")}>
           {tabs.map(([k, label]) => (
