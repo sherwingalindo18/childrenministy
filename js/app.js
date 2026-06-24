@@ -1242,11 +1242,6 @@ function TeacherSettings({ teacher, onClose, onUpdated }) {
       </div>
       <div className="field"><label>Name</label><input className="input" value={teacher.name} disabled /></div>
       <div className="field"><label>Username</label><input className="input" value={teacher.email} disabled /></div>
-      <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-        <button className="btn btn-primary" onClick={submit} disabled={busy}>{busy ? <Spinner /> : "Save photo"}</button>
-      </div>
-
       <div className="pw-section">
         {!showPw ? (
           <button className="btn btn-ghost btn-sm btn-block" onClick={() => setShowPw(true)}>Change password</button>
@@ -1263,12 +1258,14 @@ function TeacherSettings({ teacher, onClose, onUpdated }) {
               <input className="input" type="password" autoComplete="new-password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && changePw()} placeholder="Re-type new password" />
             </div>
-            <div className="modal-actions">
-              <button className="btn btn-ghost" onClick={() => { setShowPw(false); setOldPw(""); setNewPw(""); setConfirmPw(""); }}>Cancel</button>
-              <button className="btn btn-gold" onClick={changePw} disabled={pwBusy}>{pwBusy ? <Spinner /> : "Update password"}</button>
-            </div>
+            <button className="btn btn-gold btn-block" onClick={changePw} disabled={pwBusy}>{pwBusy ? <Spinner /> : "Update password"}</button>
           </>
         )}
+      </div>
+
+      <div className="modal-actions">
+        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary" onClick={submit} disabled={busy}>{busy ? <Spinner /> : "Save"}</button>
       </div>
     </Modal>
   );
