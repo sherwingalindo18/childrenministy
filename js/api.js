@@ -110,7 +110,7 @@
         const t = D.teachers.find(
           (x) => x.email.toLowerCase() === (p.email || "").toLowerCase() && x.password === p.password
         );
-        if (!t) throw new Error("Email or password is incorrect.");
+        if (!t) throw new Error("Username or password is incorrect.");
         return { ok: true, teacher: { name: t.name, email: t.email, image: t.image || "" } };
       }
       case "getStudents":

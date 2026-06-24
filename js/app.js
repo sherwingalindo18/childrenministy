@@ -180,7 +180,7 @@ function Login({ onLogin }) {
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
-    if (!email || !password) { notify("error", "Missing details", "Enter your email and password."); return; }
+    if (!email || !password) { notify("error", "Missing details", "Enter your username and password."); return; }
     setBusy(true);
     try {
       const res = await API.login(email.trim(), password);
@@ -201,10 +201,10 @@ function Login({ onLogin }) {
         <p className="sub">Attendance for the Lord’s little ones</p>
 
         <div className="field">
-          <label htmlFor="email">Email address</label>
-          <input id="email" className="input" type="email" autoComplete="username"
+          <label htmlFor="username">Username</label>
+          <input id="username" className="input" type="text" autoComplete="username"
             value={email} onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submit()} placeholder="you@church.org" />
+            onKeyDown={(e) => e.key === "Enter" && submit()} placeholder="Your username" />
         </div>
 
         <div className="field">

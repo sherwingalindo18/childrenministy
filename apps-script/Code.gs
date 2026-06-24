@@ -110,7 +110,7 @@ function loginTeacher(p) {
     // Columns: A Name, B Email, C Password
     return String(r[1]).trim().toLowerCase() === email && verifyPassword(pass, String(r[2]));
   })[0];
-  if (!found) return { ok: false, error: "Email or password is incorrect." };
+  if (!found) return { ok: false, error: "Username or password is incorrect." };
   // Columns: A Name, B Email, C Password, D Image (optional)
   return { ok: true, teacher: { name: String(found[0]), email: String(found[1]), image: String(found[3] || "") } };
 }
