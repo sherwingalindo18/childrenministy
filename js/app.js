@@ -638,7 +638,7 @@ function Students() {
                 <table className="att-table">
                   <tbody>
                     {list.map((s) => {
-                      const c = counts[s.name] || { present: 0, total: 0 };
+                      const c = counts[s.name] || { present: 0, absent: 0, total: 0 };
                       return (
                         <tr className="att-row" key={s.id}>
                           <td>
@@ -649,6 +649,7 @@ function Students() {
                           </td>
                           <td className="muted" style={{ whiteSpace: "nowrap" }}>
                             <strong style={{ color: "var(--present)" }}>{c.present}</strong> present
+                            <span style={{ opacity: 0.6 }}> · </span><strong style={{ color: "var(--absent)" }}>{c.absent}</strong> absent
                             <span style={{ opacity: 0.6 }}> · {c.total} recorded</span>
                           </td>
                           <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
