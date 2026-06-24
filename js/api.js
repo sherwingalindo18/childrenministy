@@ -36,7 +36,15 @@
     });
     if (!res.ok) throw new Error("Network error " + res.status);
     const data = await res.json();
-    if (data && data.ok === false) throw new Error(data.error || "Request failed");
+    if (data && data.ok === false) {
+      let err = data.error || "Request failed";
+      // Turn the backend's cryptic "Unknown action: X" into a clear hint.
+      if (/unknown action/i.test(err)) {
+        err = "Your Google Apps Script backend is out of date. Redeploy Code.gs " +
+              "(Apps Script → Deploy → Manage deployments → edit → New version) to enable this.";
+      }
+      throw new Error(err);
+    }
     return data;
   }
 
