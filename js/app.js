@@ -232,6 +232,7 @@ function Login({ onLogin }) {
           </p>
         )}
       </div>
+      <footer className="auth-footer">© 2026 Jesus Christ Perfect Redeemer Church. All Rights Reserved.</footer>
     </div>
   );
 }
@@ -1169,6 +1170,7 @@ function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, onUpd
         </div>
       </header>
       {children}
+      <footer className="app-footer">© 2026 Jesus Christ Perfect Redeemer Church. All Rights Reserved.</footer>
       {settingsOpen && <TeacherSettings teacher={teacher} onClose={() => setSettingsOpen(false)} onUpdated={onUpdateTeacher} />}
     </div>
   );

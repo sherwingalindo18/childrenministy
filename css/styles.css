@@ -208,7 +208,8 @@ h1, h2, h3, .display { font-family: var(--font-display); font-optical-sizing: au
 }
 
 /* ---------- App shell ---------- */
-.app { position: relative; z-index: 1; min-height: 100vh; }
+.app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+.app-footer { margin-top: auto; text-align: center; padding: 1.6rem 1.5rem; font-size: 0.8rem; color: var(--ink-faint); border-top: 1px solid var(--glass-border); }
 
 .topbar {
   position: sticky;
@@ -379,6 +380,7 @@ h1, h2, h3, .display { font-family: var(--font-display); font-optical-sizing: au
 
 /* ---------- Login ---------- */
 .auth-wrap { min-height: 100vh; display: grid; place-items: center; padding: 1.5rem; position: relative; z-index: 1; }
+.auth-footer { position: absolute; bottom: 1.2rem; left: 0; right: 0; text-align: center; font-size: 0.78rem; color: var(--ink-faint); padding: 0 1rem; }
 .auth-card { width: 100%; max-width: 420px; padding: 2.6rem 2.2rem; animation: rise 0.7s var(--ease) both; }
 .auth-logo { display: grid; place-items: center; margin-bottom: 1.6rem; }
 .ring {
