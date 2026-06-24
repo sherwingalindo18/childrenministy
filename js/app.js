@@ -1215,7 +1215,7 @@ function TeacherSettings({ teacher, onClose, onUpdated }) {
         </div>
       </div>
       <div className="field"><label>Name</label><input className="input" value={teacher.name} disabled /></div>
-      <div className="field"><label>Email</label><input className="input" value={teacher.email} disabled /></div>
+      <div className="field"><label>Username</label><input className="input" value={teacher.email} disabled /></div>
       <div className="modal-actions">
         <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
         <button className="btn btn-primary" onClick={submit} disabled={busy}>{busy ? <Spinner /> : "Save photo"}</button>
