@@ -1189,6 +1189,12 @@ function TeacherSettings({ teacher, onClose, onUpdated }) {
   const notify = useToast();
   const [image, setImage] = useState(teacher.image || "");
   const [busy, setBusy] = useState(false);
+  // change-password state
+  const [showPw, setShowPw] = useState(false);
+  const [oldPw, setOldPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [pwBusy, setPwBusy] = useState(false);
 
   const onFile = async (e) => {
     const f = e.target.files && e.target.files[0];
@@ -1209,6 +1215,19 @@ function TeacherSettings({ teacher, onClose, onUpdated }) {
     finally { setBusy(false); }
   };
 
+  const changePw = async () => {
+    if (!oldPw || !newPw || !confirmPw) { notify("error", "Missing details", "Fill in all three password fields."); return; }
+    if (newPw.length < 4) { notify("error", "Too short", "New password must be at least 4 characters."); return; }
+    if (newPw !== confirmPw) { notify("error", "Passwords don’t match", "New password and confirmation differ."); return; }
+    setPwBusy(true);
+    try {
+      await API.changePassword({ email: teacher.email, oldPassword: oldPw, newPassword: newPw });
+      notify("success", "Password changed", "Use your new password next time you sign in.");
+      setOldPw(""); setNewPw(""); setConfirmPw(""); setShowPw(false);
+    } catch (e) { notify("error", "Couldn’t change password", e.message); }
+    finally { setPwBusy(false); }
+  };
+
   return (
     <Modal title="Teacher settings" onClose={onClose}>
       <div className="student-edit-top">
@@ -1226,6 +1245,30 @@ function TeacherSettings({ teacher, onClose, onUpdated }) {
       <div className="modal-actions">
         <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
         <button className="btn btn-primary" onClick={submit} disabled={busy}>{busy ? <Spinner /> : "Save photo"}</button>
+      </div>
+
+      <div className="pw-section">
+        {!showPw ? (
+          <button className="btn btn-ghost btn-sm btn-block" onClick={() => setShowPw(true)}>Change password</button>
+        ) : (
+          <>
+            <h4 className="pw-title">Change password</h4>
+            <div className="field"><label>Current password</label>
+              <input className="input" type="password" autoComplete="current-password" value={oldPw} onChange={(e) => setOldPw(e.target.value)} placeholder="Current password" />
+            </div>
+            <div className="field"><label>New password</label>
+              <input className="input" type="password" autoComplete="new-password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder="At least 4 characters" />
+            </div>
+            <div className="field"><label>Confirm new password</label>
+              <input className="input" type="password" autoComplete="new-password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && changePw()} placeholder="Re-type new password" />
+            </div>
+            <div className="modal-actions">
+              <button className="btn btn-ghost" onClick={() => { setShowPw(false); setOldPw(""); setNewPw(""); setConfirmPw(""); }}>Cancel</button>
+              <button className="btn btn-gold" onClick={changePw} disabled={pwBusy}>{pwBusy ? <Spinner /> : "Update password"}</button>
+            </div>
+          </>
+        )}
       </div>
     </Modal>
   );

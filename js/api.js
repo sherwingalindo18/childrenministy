@@ -199,6 +199,14 @@
         if (typeof p.image === "string") t.image = p.image;
         return { ok: true };
       }
+      case "changePassword": {
+        const t = D.teachers.find((x) => x.email.toLowerCase() === (p.email || "").toLowerCase());
+        if (!t) throw new Error("Teacher not found.");
+        if (!p.newPassword) throw new Error("New password is required.");
+        if (t.password !== p.oldPassword) throw new Error("Current password is incorrect.");
+        t.password = p.newPassword; // replaces the old password
+        return { ok: true };
+      }
       case "deleteTeacher":
         D.teachers = D.teachers.filter((t) => t.email.toLowerCase() !== p.email.toLowerCase());
         return { ok: true };
@@ -231,6 +239,7 @@
     getReports: () => call("generateReports", {}),
     addTeacher: (t) => call("addTeacher", t),
     updateTeacher: (t) => call("updateTeacher", t),
+    changePassword: (data) => call("changePassword", data),
     deleteTeacher: (email) => call("deleteTeacher", { email }),
     listTeachers: () => call("listTeachers", {}),
   };

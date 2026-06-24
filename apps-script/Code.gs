@@ -49,7 +49,7 @@ function doGet() {
     version: "2024-students-photos",
     actions: ["loginTeacher", "getStudents", "updateStudent", "addStudent", "deleteStudent",
       "saveAttendance", "getAttendanceHistory", "getDashboardStats", "generateReports",
-      "addTeacher", "updateTeacher", "deleteTeacher", "listTeachers"],
+      "addTeacher", "updateTeacher", "changePassword", "deleteTeacher", "listTeachers"],
     time: new Date().toISOString()
   });
 }
@@ -72,6 +72,7 @@ function route(action, p) {
     case "generateReports":      return generateReports(p);
     case "addTeacher":           return addTeacher(p);
     case "updateTeacher":        return updateTeacher(p);
+    case "changePassword":       return changePassword(p);
     case "deleteTeacher":        return deleteTeacher(p);
     case "listTeachers":         return listTeachers(p);
     default: return { ok: false, error: "Unknown action: " + action };
@@ -269,6 +270,25 @@ function addTeacher(p) {
   if (exists) return { ok: false, error: "A teacher with that email already exists." };
   sheet(SHEETS.TEACHERS).appendRow([p.name, email, hashPassword(p.password)]);
   return { ok: true };
+}
+
+// Self-service password change: verify the current password, then replace it
+// (the old password is overwritten, so it no longer works).
+function changePassword(p) {
+  var email = String(p.email || "").trim().toLowerCase();
+  var oldPass = String(p.oldPassword || "");
+  var newPass = String(p.newPassword || "");
+  if (!newPass) return { ok: false, error: "New password is required." };
+  var sh = sheet(SHEETS.TEACHERS);
+  var values = sh.getDataRange().getValues();
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][1]).trim().toLowerCase() === email) {
+      if (!verifyPassword(oldPass, String(values[i][2]))) return { ok: false, error: "Current password is incorrect." };
+      sh.getRange(i + 1, 3).setValue(hashPassword(newPass)); // overwrite old password
+      return { ok: true };
+    }
+  }
+  return { ok: false, error: "Teacher not found." };
 }
 
 function updateTeacher(p) {

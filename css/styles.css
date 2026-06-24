@@ -356,6 +356,10 @@ h1, h2, h3, .display { font-family: var(--font-display); font-optical-sizing: au
 .info-rows > div { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
 .info-rows > div:last-child { border-bottom: none; }
 
+/* Teacher change-password section */
+.pw-section { margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--glass-border); }
+.pw-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.8rem; color: var(--gold-soft); }
+
 /* Student settings modal */
 .student-edit-top { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
 .student-edit-photo { display: flex; gap: 0.5rem; flex-wrap: wrap; }
@@ -427,7 +431,7 @@ h1, h2, h3, .display { font-family: var(--font-display); font-optical-sizing: au
 
 /* ---------- Modal ---------- */
 .modal-backdrop { position: fixed; inset: 0; z-index: 90; background: rgba(4, 8, 20, 0.6); backdrop-filter: blur(6px); display: grid; place-items: center; padding: 1.5rem; animation: fade 0.3s ease both; }
-.modal { width: 100%; max-width: 460px; padding: 1.8rem; animation: rise 0.4s var(--ease) both; }
+.modal { width: 100%; max-width: 460px; padding: 1.8rem; animation: rise 0.4s var(--ease) both; max-height: 90vh; overflow-y: auto; }
 .modal h3 { font-size: 1.3rem; margin-bottom: 0.4rem; }
 .modal .modal-actions { display: flex; gap: 0.7rem; justify-content: flex-end; margin-top: 1.4rem; }
 
