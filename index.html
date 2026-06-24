@@ -12,7 +12,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/styles.css" />
+  <!-- Cache-bust our own stylesheet so edits always show (no stale CDN copy). -->
+  <script>document.write('<link rel="stylesheet" href="css/styles.css?_=' + Date.now() + '">');</script>
+  <noscript><link rel="stylesheet" href="css/styles.css" /></noscript>
 </head>
 <body>
   <div id="root"></div>
@@ -36,8 +38,8 @@
     });
   </script>
 
-  <!-- API layer (plain JS, must run before the app) -->
-  <script src="js/api.js"></script>
+  <!-- API layer (plain JS, must run before the app) — cache-busted -->
+  <script>document.write('<scr' + 'ipt src="js/api.js?_=' + Date.now() + '"></scr' + 'ipt>');</script>
 
   <!-- React application (JSX in js/app.js).
        We fetch + transform + inject it ourselves rather than relying on Babel's
@@ -48,7 +50,7 @@
   <script>
     (async function () {
       try {
-        var src = await (await fetch('js/app.js')).text();
+        var src = await (await fetch('js/app.js?_=' + Date.now())).text();
         var out = Babel.transform(src, { presets: ['react-classic'], filename: 'app.js' }).code;
         var s = document.createElement('script');
         s.textContent = out + '\n//# sourceURL=app.compiled.js';
