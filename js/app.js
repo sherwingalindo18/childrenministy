@@ -335,7 +335,7 @@ function Dashboard({ teacher, go }) {
    ============================================================ */
 function Attendance({ teacher, preset }) {
   const notify = useToast();
-  const [date, setDate] = useState(todaySunday());
+  const [date, setDate] = useState(toISODate(new Date().toString())); // default to today
   const [category, setCategory] = useState(preset?.category || "Beginner");
   const [students, setStudents] = useState([]);
   const [marks, setMarks] = useState({}); // name -> "Present" | "Absent" | "Dropped"
