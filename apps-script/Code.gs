@@ -41,7 +41,17 @@ function doPost(e) {
 
 function doGet() {
   // Health check — visiting the /exec URL in a browser shows this.
-  return json({ ok: true, service: "Children Ministry Attendance API", time: new Date().toISOString() });
+  // "actions" lets you confirm a deploy is live: if you DON'T see
+  // "updateStudent" here, the latest Code.gs has not been deployed yet.
+  return json({
+    ok: true,
+    service: "Children Ministry Attendance API",
+    version: "2024-students-photos",
+    actions: ["loginTeacher", "getStudents", "updateStudent", "addStudent", "deleteStudent",
+      "saveAttendance", "getAttendanceHistory", "getDashboardStats", "generateReports",
+      "addTeacher", "updateTeacher", "deleteTeacher", "listTeachers"],
+    time: new Date().toISOString()
+  });
 }
 
 function json(obj) {
