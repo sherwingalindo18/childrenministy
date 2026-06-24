@@ -43,8 +43,8 @@
   /* ---------- demo data ---------- */
   const D = {
     teachers: [
-      { name: "Teacher John", email: "john@church.org", password: "demo1234" },
-      { name: "Sister Grace", email: "grace@church.org", password: "demo1234" },
+      { name: "Teacher John", email: "john@church.org", password: "demo1234", image: "" },
+      { name: "Sister Grace", email: "grace@church.org", password: "demo1234", image: "" },
     ],
     students: [
       ["B-01", "Aaron Bello", "Beginner"], ["B-02", "Bisi Adeyemi", "Beginner"],
@@ -103,7 +103,7 @@
           (x) => x.email.toLowerCase() === (p.email || "").toLowerCase() && x.password === p.password
         );
         if (!t) throw new Error("Email or password is incorrect.");
-        return { ok: true, teacher: { name: t.name, email: t.email } };
+        return { ok: true, teacher: { name: t.name, email: t.email, image: t.image || "" } };
       }
       case "getStudents":
         return { ok: true, students: p.category ? D.students.filter((s) => s.category === p.category) : D.students };
@@ -162,13 +162,14 @@
       }
       case "addTeacher":
         if (D.teachers.some((t) => t.email.toLowerCase() === p.email.toLowerCase())) throw new Error("A teacher with that email already exists.");
-        D.teachers.push({ name: p.name, email: p.email, password: p.password });
+        D.teachers.push({ name: p.name, email: p.email, password: p.password, image: "" });
         return { ok: true };
       case "updateTeacher": {
         const t = D.teachers.find((x) => x.email.toLowerCase() === p.email.toLowerCase());
         if (!t) throw new Error("Teacher not found.");
         if (p.name) t.name = p.name;
         if (p.password) t.password = p.password;
+        if (typeof p.image === "string") t.image = p.image;
         return { ok: true };
       }
       case "deleteTeacher":

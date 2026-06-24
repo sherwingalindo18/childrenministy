@@ -280,6 +280,9 @@ h1, h2, h3, .display { font-family: var(--font-display); font-optical-sizing: au
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
   color: var(--black); font-weight: 700; font-family: var(--font-display);
 }
+.avatar.avatar-btn { padding: 0; border: none; cursor: pointer; overflow: hidden; transition: box-shadow 0.2s, transform 0.2s; }
+.avatar.avatar-btn:hover { box-shadow: 0 0 0 2px var(--gold); transform: translateY(-1px); }
+.avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 
 .menu-toggle { display: none; background: var(--glass); border: 1px solid var(--glass-border); color: var(--ink); border-radius: 10px; width: 42px; height: 42px; font-size: 1.2rem; cursor: pointer; }
 

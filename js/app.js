@@ -929,9 +929,10 @@ function TeacherForm({ teacher, onSave, onClose }) {
 /* ============================================================
    App shell + routing + session
    ============================================================ */
-function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, children }) {
+function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, onUpdateTeacher, children }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoTaps, setLogoTaps] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const tabs = [["dashboard", "Dashboard"], ["attendance", "Attendance"], ["history", "History"], ["reports", "Reports"]];
   if (isAdmin) tabs.push(["admin", "Admin"]);
@@ -956,13 +957,65 @@ function Shell({ teacher, view, setView, isAdmin, onUnlockAdmin, onLogout, child
         </nav>
         <div className="topbar-right">
           <div className="who"><strong>{teacher.name}</strong><small>{teacher.email}</small></div>
-          <div className="avatar" title={teacher.name}>{initials(teacher.name)}</div>
+          <button className="avatar avatar-btn" title="Teacher settings" aria-label="Teacher settings" onClick={() => setSettingsOpen(true)}>
+            {teacher.image ? <img src={teacher.image} alt={teacher.name} /> : initials(teacher.name)}
+          </button>
           <button className="btn btn-ghost btn-sm" onClick={onLogout}>Logout</button>
           <button className="menu-toggle" onClick={() => setMenuOpen((o) => !o)} aria-label="Menu">{"≡"}</button>
         </div>
       </header>
       {children}
+      {settingsOpen && <TeacherSettings teacher={teacher} onClose={() => setSettingsOpen(false)} onUpdated={onUpdateTeacher} />}
     </div>
+  );
+}
+
+/* ============================================================
+   Teacher settings — upload a profile photo
+   ============================================================ */
+function TeacherSettings({ teacher, onClose, onUpdated }) {
+  const notify = useToast();
+  const [image, setImage] = useState(teacher.image || "");
+  const [busy, setBusy] = useState(false);
+
+  const onFile = async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    try { setImage(await resizeImage(f, 160)); }
+    catch (err) { notify("error", "Image problem", err.message); }
+    finally { e.target.value = ""; }
+  };
+
+  const submit = async () => {
+    setBusy(true);
+    try {
+      await API.updateTeacher({ email: teacher.email, image });
+      onUpdated({ image });
+      notify("success", "Profile updated", teacher.name);
+      onClose();
+    } catch (e) { notify("error", "Save failed", e.message); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <Modal title="Teacher settings" onClose={onClose}>
+      <div className="student-edit-top">
+        <Avatar name={teacher.name} image={image} size={72} />
+        <div className="student-edit-photo">
+          <label className="btn btn-ghost btn-sm" style={{ cursor: "pointer" }}>
+            {image ? "Change photo" : "Upload photo"}
+            <input type="file" accept="image/*" style={{ display: "none" }} onChange={onFile} />
+          </label>
+          {image && <button className="btn btn-ghost btn-sm" onClick={() => setImage("")}>Remove</button>}
+        </div>
+      </div>
+      <div className="field"><label>Name</label><input className="input" value={teacher.name} disabled /></div>
+      <div className="field"><label>Email</label><input className="input" value={teacher.email} disabled /></div>
+      <div className="modal-actions">
+        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary" onClick={submit} disabled={busy}>{busy ? <Spinner /> : "Save photo"}</button>
+      </div>
+    </Modal>
   );
 }
 
@@ -994,6 +1047,17 @@ function App() {
     setTeacher(null); setIsAdmin(false); setView("dashboard");
     localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY);
   }, []);
+  // Apply a change to the signed-in teacher (e.g. profile photo) and persist
+  // it to whichever storage currently holds the session.
+  const updateTeacher = useCallback((patch) => {
+    setTeacher((t) => {
+      if (!t) return t;
+      const nt = { ...t, ...patch };
+      if (localStorage.getItem(SESSION_KEY)) localStorage.setItem(SESSION_KEY, JSON.stringify(nt));
+      if (sessionStorage.getItem(SESSION_KEY)) sessionStorage.setItem(SESSION_KEY, JSON.stringify(nt));
+      return nt;
+    });
+  }, []);
 
   // auto-logout on inactivity
   useEffect(() => {
@@ -1017,7 +1081,7 @@ function App() {
         <Login onLogin={login} />
       ) : (
         <Shell teacher={teacher} view={view} setView={setView} isAdmin={isAdmin}
-          onUnlockAdmin={() => setAskPin(true)} onLogout={logout}>
+          onUnlockAdmin={() => setAskPin(true)} onLogout={logout} onUpdateTeacher={updateTeacher}>
           {view === "dashboard" && <Dashboard teacher={teacher} go={go} />}
           {view === "attendance" && <Attendance teacher={teacher} preset={attPreset} />}
           {view === "history" && <History />}

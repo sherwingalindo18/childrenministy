@@ -99,7 +99,8 @@ function loginTeacher(p) {
     return String(r[1]).trim().toLowerCase() === email && verifyPassword(pass, String(r[2]));
   })[0];
   if (!found) return { ok: false, error: "Email or password is incorrect." };
-  return { ok: true, teacher: { name: String(found[0]), email: String(found[1]) } };
+  // Columns: A Name, B Email, C Password, D Image (optional)
+  return { ok: true, teacher: { name: String(found[0]), email: String(found[1]), image: String(found[3] || "") } };
 }
 
 /* ---------- 2. Students ---------- */
@@ -233,6 +234,7 @@ function updateTeacher(p) {
     if (String(values[i][1]).toLowerCase() === String(p.email).toLowerCase()) {
       if (p.name) sh.getRange(i + 1, 1).setValue(p.name);
       if (p.password) sh.getRange(i + 1, 3).setValue(hashPassword(p.password));
+      if (typeof p.image === "string") sh.getRange(i + 1, 4).setValue(p.image); // D Image
       return { ok: true };
     }
   }
@@ -290,7 +292,7 @@ function digest(plain) {
 function initialiseSpreadsheet() {
   var ss = getSS();
 
-  var t = resetSheet(ss, SHEETS.TEACHERS, ["Teacher Name", "Email", "Password"]);
+  var t = resetSheet(ss, SHEETS.TEACHERS, ["Teacher Name", "Email", "Password", "Image"]);
   t.appendRow(["Teacher John", "john@church.org", "demo1234"]);
   t.appendRow(["Sister Grace", "grace@church.org", "demo1234"]);
 
