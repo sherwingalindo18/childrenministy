@@ -397,7 +397,7 @@ function Attendance({ teacher, preset }) {
       <div className="page-head">
         <span className="eyebrow">Attendance</span>
         <h1>Take the <span className="accent">register</span></h1>
-        <p>Choose the Sunday and the class, then mark each child Present, Absent, or Dropped.</p>
+        <p>Choose the Sunday and the class, then mark each child Present or Absent.</p>
       </div>
 
       <div className="card glass">
@@ -462,7 +462,6 @@ function Attendance({ teacher, preset }) {
                         <div className="toggle-pair">
                           <button className={marks[s.name] === "Present" ? "on-present" : ""} onClick={() => set(s.name, "Present")}>Present</button>
                           <button className={marks[s.name] === "Absent" ? "on-absent" : ""} onClick={() => set(s.name, "Absent")}>Absent</button>
-                          <button className={marks[s.name] === "Dropped" ? "on-dropped" : ""} onClick={() => set(s.name, "Dropped")}>Dropped</button>
                         </div>
                       </td>
                     </tr>
